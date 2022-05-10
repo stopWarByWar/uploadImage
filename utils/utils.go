@@ -25,8 +25,8 @@ func TokenId2TokenIdentifier(canisterID string, tokenID uint32) (string, error) 
 	return tokenIdentifier, err
 }
 
-func GetNFTImageInfos(path string) (map[string]NFTImageInfo, error) {
-	var nftInfos = make(map[string]NFTImageInfo)
+func GetEXTNFTImageInfos(path string) (map[string]EXTNFTImageInfo, error) {
+	var nftInfos = make(map[string]EXTNFTImageInfo)
 	f, err := excelize.OpenFile(path)
 	if err != nil {
 		return nil, err
@@ -47,12 +47,12 @@ func GetNFTImageInfos(path string) (map[string]NFTImageInfo, error) {
 			continue
 		}
 		supply, _ := strconv.Atoi(rows[i][6])
-		nftInfos[rows[i][1]] = NFTImageInfo{
+		nftInfos[rows[i][1]] = EXTNFTImageInfo{
 			CanisterID:       rows[i][0],
 			Name:             rows[i][1],
 			ImageUrlTemplate: rows[i][2],
 			Standard:         rows[i][5],
-			Supply:           uint32(supply),
+			Supply:           supply,
 			FileType:         rows[i][7],
 		}
 	}

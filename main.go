@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 	"uploadImage/download"
+	"uploadImage/utils"
 )
 
 func main() {
@@ -16,6 +17,26 @@ func main() {
 	sess, _ := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
 	)
-	download.Download(c, "https://bzsui-sqaaa-aaaah-qce2a-cai.raw.ic0.app/?type=thumbnail&tokenid=%s", "zzk67-giaaa-aaaaj-qaujq-cai", 10000, sess, &bucket, download.Identifier)
+
+	nftInfos, err := utils.GetEXTNFTImageInfos("./download/nft_image1.xlsx")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for name, info := range nftInfos {
+		var standard uint8
+		if info.Standard == "identifier" {
+			standard = download.Identifier
+		} else {
+			standard = download.ID
+		}
+		fmt.Println(name, info.Supply, info.ImageUrlTemplate)
+		err = download.Download(c, info.ImageUrlTemplate, info.CanisterID, info.Supply, sess, &bucket, standard, info.FileType)
+		if err != nil {
+			errMsg := fmt.Sprintf("error:%v,url:%v", err, info.ImageUrlTemplate)
+			fmt.Println(errMsg)
+			continue
+		}
+	}
 	fmt.Println(time.Now().Sub(start))
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"os"
+	"path/filepath"
 )
 
 func listBuckets() {
@@ -142,4 +143,123 @@ func DeleteItem(sess *session.Session, bucket *string, item *string) error {
 	}
 
 	return nil
+}
+
+func DeleteItems(sess *session.Session, bucket *string) error {
+	// snippet-start:[s3.go.delete_objects.call]
+	svc := s3.New(sess)
+
+	iter := s3manager.NewDeleteListIterator(svc, &s3.ListObjectsInput{
+		Bucket: bucket,
+	})
+
+	err := s3manager.NewBatchDeleteWithClient(svc).Delete(aws.BackgroundContext(), iter)
+	// snippet-end:[s3.go.delete_objects.call]
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SetBucketPublic(sess *session.Session, bucket *string) error {
+	// snippet-start:[s3.go.make_bucket_public.call]
+	svc := s3.New(sess)
+
+	params := &s3.PutBucketAclInput{
+		Bucket: bucket,
+		ACL:    aws.String("public-read"),
+	}
+
+	_, err := svc.PutBucketAcl(params)
+	// snippet-end:[s3.go.make_bucket_public.call]
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type DirectoryIterator struct {
+	filePaths []string
+	bucket    string
+	next      struct {
+		path string
+		f    *os.File
+	}
+	err error
+}
+
+// const exitError = 1
+
+// UploadDirectory uploads the files in a directory to a bucket
+// Inputs:
+//     sess is the current session, which provides configuration for the SDK's service clients
+//     bucket is the name of the bucket
+//     path is the path to the directory to upload
+// Output:
+//     If success, nil
+//     Otherwise, an error from the call to UploadWithIterator
+func UploadDirectory(sess *session.Session, bucket *string, path *string) error {
+	di := NewDirectoryIterator(bucket, path)
+	uploader := s3manager.NewUploader(sess)
+
+	err := uploader.UploadWithIterator(aws.BackgroundContext(), di)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// NewDirectoryIterator builds a new DirectoryIterator
+func NewDirectoryIterator(bucket *string, dir *string) s3manager.BatchUploadIterator {
+	var paths []string
+	filepath.Walk(*dir, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			paths = append(paths, path)
+		}
+		return nil
+	})
+
+	return &DirectoryIterator{
+		filePaths: paths,
+		bucket:    *bucket,
+	}
+}
+
+// Next returns whether next file exists
+func (di *DirectoryIterator) Next() bool {
+	if len(di.filePaths) == 0 {
+		di.next.f = nil
+		return false
+	}
+
+	f, err := os.Open(di.filePaths[0])
+	di.err = err
+	di.next.f = f
+	di.next.path = di.filePaths[0]
+	di.filePaths = di.filePaths[1:]
+
+	return true && di.Err() == nil
+}
+
+// Err returns error of DirectoryIterator
+func (di *DirectoryIterator) Err() error {
+	return di.err
+}
+
+// UploadObject uploads a file
+func (di *DirectoryIterator) UploadObject() s3manager.BatchUploadObject {
+	f := di.next.f
+	return s3manager.BatchUploadObject{
+		Object: &s3manager.UploadInput{
+			Bucket: &di.bucket,
+			Key:    &di.next.path,
+			Body:   f,
+		},
+		After: func() error {
+			return f.Close()
+		},
+	}
 }
