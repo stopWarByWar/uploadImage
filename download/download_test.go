@@ -1,11 +1,15 @@
 package download
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 	"uploadImage/utils"
@@ -14,48 +18,16 @@ import (
 func TestDownload(t *testing.T) {
 	c := new(http.Client)
 	start := time.Now()
-	var bucket = "pyd-nft"
-	sess, _ := session.NewSession(&aws.Config{
-		Region: aws.String("us-east-1")},
-	)
-	t.Log(Download(c, "https://bzsui-sqaaa-aaaah-qce2a-cai.raw.ic0.app/?type=thumbnail&tokenid=%s", "zzk67-giaaa-aaaaj-qaujq-cai", 100, sess, &bucket, Identifier, "jpg"))
+	info := utils.EXTNFTImageInfo{
+		CanisterID:       "q6hjz-kyaaa-aaaah-qcama-cai",
+		ImageUrlTemplate: "https://fp7fo-2aaaa-aaaaf-qaeea-cai.raw.ic0.app/Token/%d",
+		Supply:           100,
+		Standard:         "id",
+		FileType:         "jpg",
+	}
+	t.Log(Download(c, info))
 	t.Log(time.Now().Sub(start))
 }
-
-//func TestDownloadIdentifier(t *testing.T) {
-//	c := new(http.Client)
-//	start := time.Now()
-//	var wg sync.WaitGroup
-//	var bucket = "pyd-nft"
-//	sess, _ := session.NewSession(&aws.Config{
-//		Region: aws.String("us-east-1")},
-//	)
-//
-//	for i := 0; i < 10; i++ {
-//		from := i * 10
-//		to := i*10 + 10
-//		go func(from, to int) {
-//			wg.Add(1)
-//			defer wg.Done()
-//			t.Log("from: ", from, "to: ", to)
-//			t.Log(DownloadSingleRoutine(c, "https://bzsui-sqaaa-aaaah-qce2a-cai.raw.ic0.app/?type=thumbnail&tokenid=%s", "zzk67-giaaa-aaaaj-qaujq-cai", from, to, sess, &bucket, Identifier))
-//		}(from, to)
-//	}
-//	wg.Wait()
-//	t.Log(time.Now().Sub(start))
-//}
-//
-//func TestDownload1(t *testing.T) {
-//	c := new(http.Client)
-//	start := time.Now()
-//	var bucket = "pyd-nft"
-//	sess, _ := session.NewSession(&aws.Config{
-//		Region: aws.String("us-east-1")},
-//	)
-//
-//	t.Log(DownloadSingleRoutine(c, "https://zzk67-giaaa-aaaaj-qaujq-cai.raw.ic0.app/?type=thumbnail&tokenid=%s", "zzk67-giaaa-aaaaj-qaujq-cai", 0, 10, sess, &bucket, Identifier))
-//	t.Log(time.Now().Sub(start))
-//}
 
 func TestDownloadAll(t *testing.T) {
 	start := time.Now()
@@ -97,4 +69,161 @@ func TestDownloadSingle(t *testing.T) {
 		return
 	}
 	t.Log(ioutil.WriteFile("image.svg", data, 0644))
+}
+
+func TestName(t *testing.T) {
+	nftInfos, err := utils.GetEXTNFTImageInfos("./nft_image.xlsx")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	c := new(http.Client)
+	var errUrls []utils.ErrUrl
+	fi, err := os.Open("./log")
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+		return
+	}
+	defer fi.Close()
+
+	br := bufio.NewReader(fi)
+	for {
+		a, _, c := br.ReadLine()
+		if c == io.EOF {
+			break
+		}
+
+		result := strings.Split(string(a), ",")
+		canisterID := strings.Split(result[1], ":")[1]
+		tokenID := strings.Split(result[2], ":")[1]
+		url := strings.Split(result[4], ":")[1] + ":" + strings.Split(result[4], ":")[2]
+		errCode := strings.Split(strings.Split(result[0], ":")[1], " ")[1]
+
+		if strings.Contains(errCode, "20") {
+			continue
+		}
+
+		if canisterID == "po6n2-uiaaa-aaaaj-qaiua-cai" {
+			url = "https://po6n2-uiaaa-aaaaj-qaiua-cai.raw.ic0.app/?tokenid="
+			id, _ := strconv.Atoi(tokenID)
+			identifier, _ := utils.TokenId2TokenIdentifier("po6n2-uiaaa-aaaaj-qaiua-cai", uint32(id))
+			url = url + identifier
+		}
+
+		if canisterID == "p5jg7-6aaaa-aaaah-qcolq-cai" {
+			id, _ := strconv.Atoi(tokenID)
+			if id > 9787 {
+				continue
+			}
+		}
+		t.Log(url, tokenID, canisterID, nftInfos[canisterID].FileType, errCode)
+		id, _ := strconv.Atoi(tokenID)
+		errUrls = append(errUrls, utils.ErrUrl{Url: url, TokenID: uint32(id), CanisterID: canisterID, Type: nftInfos[canisterID].FileType})
+	}
+	ReRequestUrlOld(c, errUrls)
+}
+
+func TestDownloadCCCFromIC(t *testing.T) {
+	var errUrls []utils.ErrUrl
+	data, err := ioutil.ReadFile("./test_file/ccc_nft_ic_test.json")
+	if err != nil {
+		panic(err)
+	}
+	var nftInfos map[string]utils.CCCNFTImagesInfo
+	if err := json.Unmarshal(data, &nftInfos); err != nil {
+		panic(err)
+	}
+
+	c := new(http.Client)
+	for id, info := range nftInfos {
+		errUrl, err := DownloadCCCFromIC(c, info)
+		if err != nil {
+			fmt.Sprintf("can not download CCC images with error: %v,canisterID:%s", err, id)
+			continue
+		}
+		errUrls = append(errUrls, errUrl...)
+	}
+	errURLData, err := json.Marshal(errUrls)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	t.Log(ioutil.WriteFile("err.json", errURLData, 0644))
+	fmt.Println("successfully download ")
+}
+
+func TestDownloadCCCFromIPFS(t *testing.T) {
+	var errUrls []utils.ErrUrl
+	data, err := ioutil.ReadFile("./test_file/ccc_nft_ifps_test.json")
+	if err != nil {
+		panic(err)
+	}
+	var nftInfos map[string]utils.CCCNFTImagesInfo
+	if err := json.Unmarshal(data, &nftInfos); err != nil {
+		panic(err)
+	}
+
+	c := new(http.Client)
+	for _, info := range nftInfos {
+		var singleNFTInfos []utils.CCCNFTInfo
+		singleNFTInfos, err = utils.GetCCCNFTImageURL(info.CanisterID, info.FileType, info.ImageUrlTemplate, info.Type)
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+		errUrl, err := DownloadCCCFromIPFS(c, singleNFTInfos)
+		if err != nil {
+			fmt.Sprintf("can not download CCC images with error: %v,canisterID:%s", err, info.CanisterID)
+			continue
+		}
+		errUrls = append(errUrls, errUrl...)
+	}
+	errURLData, err := json.Marshal(errUrls)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	t.Log(ioutil.WriteFile("CCCErr.json", errURLData, 0644))
+}
+
+func TestDownloadCCCFromIPFS1(t *testing.T) {
+	var errUrls []utils.ErrUrl
+	data, err := ioutil.ReadFile("./test_file/ccc_nft_ifps_1_test.json")
+	if err != nil {
+		panic(err)
+	}
+	var nftInfos map[string]utils.CCCNFTImagesInfo
+	if err := json.Unmarshal(data, &nftInfos); err != nil {
+		panic(err)
+	}
+
+	c := new(http.Client)
+	for _, info := range nftInfos {
+		var singleNFTInfos []utils.CCCNFTInfo
+		singleNFTInfos, err = utils.GetCCCNFTImageURL(info.CanisterID, info.FileType, info.ImageUrlTemplate, info.Type)
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+		errUrl, err := DownloadCCCFromIPFS(c, singleNFTInfos)
+		if err != nil {
+			fmt.Sprintf("can not download CCC images with error: %v,canisterID:%s", err, info.CanisterID)
+			continue
+		}
+		errUrls = append(errUrls, errUrl...)
+	}
+	errURLData, err := json.Marshal(errUrls)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	t.Log(ioutil.WriteFile("CCCErr.json", errURLData, 0644))
+}
+
+func TestReRequestUrl(t *testing.T) {
+	var errUrls []utils.ErrUrl
+	data, err := ioutil.ReadFile("CCCErr.json")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	_ = json.Unmarshal(data, &errUrls)
+	newErrUrls, _ := ReRequestUrl(&http.Client{}, errUrls)
+
+	_data, _ := json.Marshal(&newErrUrls)
+	filePath := fmt.Sprintf("err.json")
+	ioutil.WriteFile(filePath, _data, 0644)
 }

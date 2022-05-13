@@ -1,0 +1,38 @@
+{
+
+  "bjcsj-rqaaa-aaaah-qcxqq-cai":   {
+    "canister_id": "bjcsj-rqaaa-aaaah-qcxqq-cai",
+    "name": "Avocado Research",
+    "image_url_templates": [
+      {
+        "image_url_template": "https://iwnuo-oqaaa-aaaah-qcwcq-cai.raw.ic0.app/thumbnail/%d",
+        "from": 0,
+        "to": 4
+      },
+      {
+        "image_url_template": "https://i7o7s-yyaaa-aaaah-qcwda-cai.raw.ic0.app/thumbnail/%d",
+        "from": 2000,
+        "to": 2004
+      },
+      {
+        "image_url_template": "https://iypzg-vaaaa-aaaah-qcwdq-cai.raw.ic0.app/thumbnail/%d",
+        "from": 4000,
+        "to": 4004
+      },
+      {
+        "image_url_template": "https://jvb5i-2iaaa-aaaah-qcwea-cai.raw.ic0.app/thumbnail/%d",
+        "from": 6000,
+        "to": 6004
+      },
+      {
+        "image_url_template": "https://jsa34-xqaaa-aaaah-qcweq-cai.raw.ic0.app/thumbnail/%d",
+        "from": 8000,
+        "to": 8004
+      }
+    ],
+    "supply": 10000,
+    "file_type": "png",
+    "type": "ic",
+    "image_url_template":"https://gateway.filedrive.io/ipfs/%s"
+  }
+}

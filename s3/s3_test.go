@@ -91,3 +91,16 @@ func TestDeleteItems(t *testing.T) {
 
 	t.Log(DeleteItems(sess, &bucket))
 }
+
+func TestPutDirectory(t *testing.T) {
+	bucket := "pyd-nft"
+	directory := "../download/images/ctt6t-faaaa-aaaah-qcpbq-cai"
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1")},
+	)
+	err = UploadDirectory(sess, &bucket, &directory)
+	if err != nil {
+		fmt.Println("Got an error uploading directory " + directory + " to bucket " + bucket)
+		return
+	}
+}

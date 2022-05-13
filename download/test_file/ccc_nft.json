@@ -1,0 +1,11 @@
+{
+  "2j7u5-nyaaa-aaaah-qczma-cai":   {
+    "canister_id": "2j7u5-nyaaa-aaaah-qczma-cai",
+    "name": "Dragon Boots",
+    "image_url_templates": [],
+    "supply": 266,
+    "file_type": "png",
+    "type": "ipfs",
+    "image_url_template":"https://gateway.filedrive.io/ipfs/%s"
+  }
+}

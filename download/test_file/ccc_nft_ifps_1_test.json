@@ -1,0 +1,11 @@
+{
+  "k3wif-yyaaa-aaaah-qc2ca-cai":   {
+    "canister_id": "k3wif-yyaaa-aaaah-qc2ca-cai",
+    "name": "Metacats",
+    "image_url_templates": [],
+    "supply": 10000,
+    "file_type": "png",
+    "type": "ipfs-1",
+    "image_url_template":"https://gateway.filedrive.io/ipfs/%s"
+  }
+}
