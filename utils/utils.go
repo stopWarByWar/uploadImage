@@ -97,51 +97,47 @@ func CompressImageResource(data []byte) []byte {
 	return buf.Bytes()
 }
 
-type textOp struct {
-	Some string `ic:"some"`
-	None uint8  `ic:"none"`
-}
-
-type nftStoreInfo struct {
-	Index     uint64 `ic:"index"`
-	PhotoLink textOp `ic:"photoLink"`
-	VideoLink textOp `ic:"videoLink"`
-}
-
-type registry struct {
-	Principal principal.Principal `ic:"0"`
-	Tokens    []nftStoreInfo      `ic:"1"`
-}
-
 func GetCCCNFTImageURL(canisterID string, fileType string, imageUrlTemplate string, types string) ([]CCCNFTInfo, error) {
-	_agent := agent.New(true, "")
-	methodName := "getRegistry"
-	arg, _ := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
-	_, result, _, err := _agent.Query(canisterID, methodName, arg)
-	if err != nil {
-		return nil, err
-	}
-
-	var myResult []registry
-	utils.Decode(&myResult, result[0])
 	var infos []CCCNFTInfo
-
-	for _, registry := range myResult {
-		for _, token := range registry.Tokens {
-			var imageUrl string
-			var videoUrl string
-			switch types {
-			case "ipfs":
-				imageUrl = token.PhotoLink.Some
-				videoUrl = token.VideoLink.Some
-			case "ipfs-1":
-				imageUrl = fmt.Sprintf(imageUrlTemplate, token.PhotoLink.Some)
-				videoUrl = fmt.Sprintf(imageUrlTemplate, token.VideoLink.Some)
+	_agent := agent.New(true, "")
+	switch types {
+	case "ipfs":
+		methodName := "getRegistry"
+		arg, _ := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
+		_, result, _, err := _agent.Query(canisterID, methodName, arg)
+		if err != nil {
+			return nil, err
+		}
+		var myResult []registry
+		utils.Decode(&myResult, result[0])
+		for _, registry := range myResult {
+			for _, token := range registry.Tokens {
+				imageUrl := token.PhotoLink.Some
+				videoUrl := token.VideoLink.Some
+				infos = append(infos, CCCNFTInfo{
+					CanisterID:    canisterID,
+					TokenID:       token.Index,
+					ImageUrl:      imageUrl,
+					VideoUrl:      videoUrl,
+					ImageFileType: fileType,
+				})
 			}
-
+		}
+	case "ipfs-1":
+		methodName := "getAllNftLinkInfo"
+		arg, _ := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
+		_, result, _, err := _agent.Query(canisterID, methodName, arg)
+		if err != nil {
+			return nil, err
+		}
+		var myResult []TokenImageUrl
+		utils.Decode(&myResult, result[0])
+		for _, token := range myResult {
+			imageUrl := fmt.Sprintf(imageUrlTemplate, token.NFTLinkInfo.PhotoLink)
+			videoUrl := fmt.Sprintf(imageUrlTemplate, token.NFTLinkInfo.VideoLink)
 			infos = append(infos, CCCNFTInfo{
 				CanisterID:    canisterID,
-				TokenID:       token.Index,
+				TokenID:       token.TokenIndex,
 				ImageUrl:      imageUrl,
 				VideoUrl:      videoUrl,
 				ImageFileType: fileType,

@@ -179,7 +179,7 @@ func TestDownloadCCCFromIPFS(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	t.Log(ioutil.WriteFile("CCCErr.json", errURLData, 0644))
+	t.Log(ioutil.WriteFile("err.json", errURLData, 0644))
 }
 
 func TestDownloadCCCFromIPFS1(t *testing.T) {
@@ -211,12 +211,12 @@ func TestDownloadCCCFromIPFS1(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	t.Log(ioutil.WriteFile("CCCErr.json", errURLData, 0644))
+	t.Log(ioutil.WriteFile("err.json", errURLData, 0644))
 }
 
 func TestReRequestUrl(t *testing.T) {
 	var errUrls []utils.ErrUrl
-	data, err := ioutil.ReadFile("CCCErr.json")
+	data, err := ioutil.ReadFile("err.json")
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

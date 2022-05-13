@@ -101,8 +101,15 @@ func DownloadSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.Client, ur
 			url = fmt.Sprintf(urlTemplate, tokenID)
 		}
 		resp, err := client.Get(url)
-		if err != nil || (resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 404) {
-			errMsg := fmt.Sprintf("Unable to get URL with status code error: %d %s,canisterID:%v,tokenID:%v,error:%v,url:%v", resp.StatusCode, resp.Status, canisterID, tokenID, err, url)
+		if err != nil {
+			errMsg := fmt.Sprintf("Unable to get URL with error:%v", err)
+			fmt.Println(errMsg)
+			errUrlChan <- utils.ErrUrl{Url: url, TokenID: tokenID, Type: fileType, CanisterID: canisterID}
+			continue
+		}
+
+		if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 404 {
+			errMsg := fmt.Sprintf("Unable to get URL with status code error: %d %s,canisterID:%v,tokenID:%v,url:%v", resp.StatusCode, resp.Status, canisterID, tokenID, url)
 			fmt.Println(errMsg)
 			errUrlChan <- utils.ErrUrl{Url: url, TokenID: tokenID, Type: fileType, CanisterID: canisterID}
 			continue
@@ -264,10 +271,10 @@ Loop:
 				continue
 			}
 			errUrls = append(errUrls, errUrl)
-			fmt.Printf("error: %v\n", errUrls)
-			if len(errUrls) >= 1 {
-				break Loop
-			}
+			//fmt.Printf("error: %v\n", errUrls)
+			//if len(errUrls) >= 1 {
+			//	break Loop
+			//}
 		case <-stopChan:
 			finishedGoroutinesAmount++
 			if finishedGoroutinesAmount == goroutinesAmount {
@@ -282,8 +289,15 @@ Loop:
 func DownloadCCCFromICSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.Client, infos []utils.CCCNFTInfo) {
 	for _, info := range infos {
 		resp, err := client.Get(info.ImageUrl)
-		if err != nil || (resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 404) {
-			errMsg := fmt.Sprintf("Unable to get URL with status code error: %d %s,canisterID:%v,tokenID:%v,error:%v,url:%v", resp.StatusCode, resp.Status, info.CanisterID, info.TokenID, err, info.ImageUrl)
+		if err != nil {
+			errMsg := fmt.Sprintf("Unable to get URL with error:%v", err)
+			fmt.Println(errMsg)
+			errUrlChan <- utils.ErrUrl{Url: info.ImageUrl, TokenID: uint32(info.TokenID), Type: info.ImageFileType, CanisterID: info.CanisterID}
+			continue
+		}
+
+		if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 404 {
+			errMsg := fmt.Sprintf("Unable to get URL with status code error: %d %s,canisterID:%v,tokenID:%v,url:%v", resp.StatusCode, resp.Status, info.CanisterID, info.TokenID, info.ImageUrl)
 			fmt.Println(errMsg)
 			errUrlChan <- utils.ErrUrl{Url: info.ImageUrl, TokenID: uint32(info.TokenID), Type: info.ImageFileType, CanisterID: info.CanisterID}
 			continue
@@ -303,7 +317,7 @@ func DownloadCCCFromICSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.C
 		err = ioutil.WriteFile(filename, data, 0766)
 		// snippet-end:[s3.go.upload_object.call]
 		if err != nil {
-			errMsg := fmt.Sprintf("Unable to upload image to s3 with error: %v,canisterID:%v,tokenID:%v", err, info.CanisterID, info.TokenID)
+			errMsg := fmt.Sprintf("Unable to save image file with error: %v,canisterID:%v,tokenID:%v", err, info.CanisterID, info.TokenID)
 			fmt.Println(errMsg)
 			errUrlChan <- utils.ErrUrl{Url: info.ImageUrl, TokenID: uint32(info.TokenID), Type: info.ImageFileType, CanisterID: info.CanisterID}
 			continue

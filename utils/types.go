@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"github.com/mix-labs/IC-Go/utils/principal"
+)
+
 const EntrepotNFTInfoRowLen = 8
 
 type EXTNFTImageInfo struct {
@@ -41,4 +45,31 @@ type CCCNFTInfo struct {
 	VideoUrl      string `json:"video_url"`
 	ImageFileType string `json:"file_type"`
 	VideoFileType string `json:"video_file_type"`
+}
+
+type textOp struct {
+	Some string `ic:"some"`
+	None uint8  `ic:"none"`
+}
+
+type nftStoreInfo struct {
+	Index     uint64 `ic:"index"`
+	PhotoLink textOp `ic:"photoLink"`
+	VideoLink textOp `ic:"videoLink"`
+}
+
+type registry struct {
+	Principal principal.Principal `ic:"0"`
+	Tokens    []nftStoreInfo      `ic:"1"`
+}
+
+type TokenImageUrl struct {
+	TokenIndex  uint64      `ic:"0"`
+	NFTLinkInfo NFTLinkInfo `ic:"1"`
+}
+
+type NFTLinkInfo struct {
+	ID        uint64 `ic:"id"`
+	PhotoLink string `ic:"photoLink"`
+	VideoLink string `ic:"videoLink"`
 }

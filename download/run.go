@@ -39,16 +39,15 @@ func DownloadImages(filePath string) {
 
 	errURLData, _ := json.Marshal(errUrls)
 	_ = ioutil.WriteFile("err.json", errURLData, 0644)
-	fmt.Println("successfully download ")
+	fmt.Println("successfully download ext images")
 	fmt.Println(time.Now().Sub(start))
 }
 
 func DownloadCCCImages(filePath string) {
+	start := time.Now()
 	var errUrls []utils.ErrUrl
-
 	var cccInfos map[string]utils.CCCNFTImagesInfo
 	c := new(http.Client)
-	start := time.Now()
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		panic(err.Error())
@@ -82,11 +81,13 @@ func DownloadCCCImages(filePath string) {
 			}
 			errUrls = append(errUrls, errUrl...)
 		}
-		fmt.Println(time.Now().Sub(start))
+		fmt.Printf("successfully download ccc images, canisterID:%s\n", info.CanisterID)
 	}
 
 	errURLData, _ := json.Marshal(errUrls)
 	_ = ioutil.WriteFile("err.json", errURLData, 0644)
+	fmt.Printf("successfully download ccc images\n")
+	fmt.Println(time.Now().Sub(start))
 }
 
 func Retry(errPath string) {
