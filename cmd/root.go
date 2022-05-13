@@ -117,5 +117,4 @@ func init() {
 
 	rootCmd.AddCommand(downloadCCCCmd)
 	downloadCCCCmd.Flags().StringP("nft-file", "n", "./files/ccc_nft.json", "nft image info file path")
-
 }

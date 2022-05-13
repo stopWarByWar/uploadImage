@@ -35,6 +35,16 @@
     "image_url_template":""
   },
 
+  "2j7u5-nyaaa-aaaah-qczma-cai":   {
+    "canister_id": "2j7u5-nyaaa-aaaah-qczma-cai",
+    "name": "Dragon Boots",
+    "image_url_templates": [],
+    "supply": 266,
+    "file_type": "png",
+    "type": "ipfs",
+    "image_url_template":"https://gateway.filedrive.io/ipfs/%s"
+  },
+
   "2x3lw-tiaaa-aaaah-qcvca-cai":   {
     "canister_id": "2x3lw-tiaaa-aaaah-qcvca-cai",
     "name": "DfinityGang",
@@ -127,5 +137,25 @@
     "file_type": "png",
     "type": "ic",
     "image_url_template":""
+  },
+
+  "6ykkw-jyaaa-aaaah-qczua-cai":   {
+    "canister_id": "6ykkw-jyaaa-aaaah-qczua-cai",
+    "name": "IC CARS",
+    "image_url_templates": [],
+    "supply": 3795,
+    "file_type": "png",
+    "type": "ipfs",
+    "image_url_template":""
+  },
+
+  "k3wif-yyaaa-aaaah-qc2ca-cai":   {
+    "canister_id": "k3wif-yyaaa-aaaah-qc2ca-cai",
+    "name": "Metacats",
+    "image_url_templates": [],
+    "supply": 10000,
+    "file_type": "png",
+    "type": "ipfs-1",
+    "image_url_template":"https://gateway.filedrive.io/ipfs/%s"
   }
 }

@@ -6,8 +6,8 @@
     "image_url_templates": [
       {
         "image_url_template": "https://iwnuo-oqaaa-aaaah-qcwcq-cai.raw.ic0.app/thumbnail/%d",
-        "from": 0,
-        "to": 4
+        "from": 1994,
+        "to": 2000
       },
       {
         "image_url_template": "https://i7o7s-yyaaa-aaaah-qcwda-cai.raw.ic0.app/thumbnail/%d",
@@ -21,13 +21,13 @@
       },
       {
         "image_url_template": "https://jvb5i-2iaaa-aaaah-qcwea-cai.raw.ic0.app/thumbnail/%d",
-        "from": 6000,
-        "to": 6004
+        "from": 7996,
+        "to": 8000
       },
       {
         "image_url_template": "https://jsa34-xqaaa-aaaah-qcweq-cai.raw.ic0.app/thumbnail/%d",
-        "from": 8000,
-        "to": 8004
+        "from": 8996,
+        "to": 10000
       }
     ],
     "supply": 10000,

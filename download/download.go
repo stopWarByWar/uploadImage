@@ -97,7 +97,7 @@ func DownloadSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.Client, ur
 			tokenID = uint32(i + from + 1)
 			url = fmt.Sprintf(urlTemplate, tokenID)
 		case CCC:
-			tokenID = uint32(i + from + 1)
+			tokenID = uint32(i + from)
 			url = fmt.Sprintf(urlTemplate, tokenID)
 		}
 		resp, err := client.Get(url)
@@ -160,7 +160,7 @@ func DownloadSingle(client *http.Client, url string) ([]byte, error) {
 }
 
 func DownloadCCCFromIC(client *http.Client, info utils.CCCNFTImagesInfo) ([]utils.ErrUrl, error) {
-	if len(info.ImageUrlTemplate) == 0 {
+	if len(info.ImageUrlTemplates) == 0 {
 		return nil, nil
 	}
 
@@ -179,7 +179,7 @@ func DownloadCCCFromIC(client *http.Client, info utils.CCCNFTImagesInfo) ([]util
 		if singeCanisterSupply < goroutineAmount {
 			goroutinesAmount++
 			go func() {
-				DownloadSingleRoutine(errUrlChan, client, urlsTemplate.ImageUrlTemplate, info.CanisterID, urlsTemplate.From, urlsTemplate.To, ID, info.FileType)
+				DownloadSingleRoutine(errUrlChan, client, urlsTemplate.ImageUrlTemplate, info.CanisterID, urlsTemplate.From, urlsTemplate.To, CCC, info.FileType)
 				stopChan <- struct{}{}
 			}()
 		} else {
@@ -195,7 +195,7 @@ func DownloadCCCFromIC(client *http.Client, info utils.CCCNFTImagesInfo) ([]util
 					_to = (i+1)*elementPerGoroutines + urlsTemplate.From
 				}
 				go func(_from, _to int) {
-					DownloadSingleRoutine(errUrlChan, client, urlsTemplate.ImageUrlTemplate, info.CanisterID, _from, _to, ID, info.FileType)
+					DownloadSingleRoutine(errUrlChan, client, urlsTemplate.ImageUrlTemplate, info.CanisterID, _from, _to, CCC, info.FileType)
 					stopChan <- struct{}{}
 				}(_from, _to)
 			}
