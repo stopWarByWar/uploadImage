@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	goroutineAmount = 1
+	goroutineAmount = 20
 )
 
 const (
