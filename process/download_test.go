@@ -1,15 +1,10 @@
-package download
+package process
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"strconv"
-	"strings"
 	"testing"
 	"time"
 	"uploadImage/utils"
@@ -60,7 +55,7 @@ func TestDownloadAll(t *testing.T) {
 
 func TestDownloadSingle(t *testing.T) {
 	c := new(http.Client)
-	var url = "https://d3ttm-qaaaa-aaaai-qam4a-cai.raw.ic0.app/?tokenId=3189"
+	var url = "https://ep54t-xiaaa-aaaah-qcdza-cai.raw.ic0.app/?type=thumbnail&tokenid=uhfgh-4ykor-uwiaa-aaaaa-b4aq6-iaqca-aaaaa-a"
 
 	data, err := DownloadSingle(c, url)
 	if err != nil {
@@ -68,59 +63,59 @@ func TestDownloadSingle(t *testing.T) {
 		t.Log(errMsg)
 		return
 	}
-	t.Log(ioutil.WriteFile("image.svg", data, 0644))
+	t.Log(ioutil.WriteFile("image.gi", data, 0644))
 }
 
-func TestName(t *testing.T) {
-	nftInfos, err := utils.GetEXTNFTImageInfos("./nft_image.xlsx")
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-	c := new(http.Client)
-	var errUrls []utils.ErrUrl
-	fi, err := os.Open("./log")
-	if err != nil {
-		fmt.Printf("Error: %s\n", err)
-		return
-	}
-	defer fi.Close()
-
-	br := bufio.NewReader(fi)
-	for {
-		a, _, c := br.ReadLine()
-		if c == io.EOF {
-			break
-		}
-
-		result := strings.Split(string(a), ",")
-		canisterID := strings.Split(result[1], ":")[1]
-		tokenID := strings.Split(result[2], ":")[1]
-		url := strings.Split(result[4], ":")[1] + ":" + strings.Split(result[4], ":")[2]
-		errCode := strings.Split(strings.Split(result[0], ":")[1], " ")[1]
-
-		if strings.Contains(errCode, "20") {
-			continue
-		}
-
-		if canisterID == "po6n2-uiaaa-aaaaj-qaiua-cai" {
-			url = "https://po6n2-uiaaa-aaaaj-qaiua-cai.raw.ic0.app/?tokenid="
-			id, _ := strconv.Atoi(tokenID)
-			identifier, _ := utils.TokenId2TokenIdentifier("po6n2-uiaaa-aaaaj-qaiua-cai", uint32(id))
-			url = url + identifier
-		}
-
-		if canisterID == "p5jg7-6aaaa-aaaah-qcolq-cai" {
-			id, _ := strconv.Atoi(tokenID)
-			if id > 9787 {
-				continue
-			}
-		}
-		t.Log(url, tokenID, canisterID, nftInfos[canisterID].FileType, errCode)
-		id, _ := strconv.Atoi(tokenID)
-		errUrls = append(errUrls, utils.ErrUrl{Url: url, TokenID: uint32(id), CanisterID: canisterID, Type: nftInfos[canisterID].FileType})
-	}
-	ReRequestUrlOld(c, errUrls)
-}
+//func TestName(t *testing.T) {
+//	nftInfos, err := utils.GetEXTNFTImageInfos("./nft_image.xlsx")
+//	if err != nil {
+//		t.Fatalf(err.Error())
+//	}
+//	c := new(http.Client)
+//	var errUrls []utils.ErrUrl
+//	fi, err := os.Open("./log")
+//	if err != nil {
+//		fmt.Printf("Error: %s\n", err)
+//		return
+//	}
+//	defer fi.Close()
+//
+//	br := bufio.NewReader(fi)
+//	for {
+//		a, _, c := br.ReadLine()
+//		if c == io.EOF {
+//			break
+//		}
+//
+//		result := strings.Split(string(a), ",")
+//		canisterID := strings.Split(result[1], ":")[1]
+//		tokenID := strings.Split(result[2], ":")[1]
+//		url := strings.Split(result[4], ":")[1] + ":" + strings.Split(result[4], ":")[2]
+//		errCode := strings.Split(strings.Split(result[0], ":")[1], " ")[1]
+//
+//		if strings.Contains(errCode, "20") {
+//			continue
+//		}
+//
+//		if canisterID == "po6n2-uiaaa-aaaaj-qaiua-cai" {
+//			url = "https://po6n2-uiaaa-aaaaj-qaiua-cai.raw.ic0.app/?tokenid="
+//			id, _ := strconv.Atoi(tokenID)
+//			identifier, _ := utils.TokenId2TokenIdentifier("po6n2-uiaaa-aaaaj-qaiua-cai", uint32(id))
+//			url = url + identifier
+//		}
+//
+//		if canisterID == "p5jg7-6aaaa-aaaah-qcolq-cai" {
+//			id, _ := strconv.Atoi(tokenID)
+//			if id > 9787 {
+//				continue
+//			}
+//		}
+//		t.Log(url, tokenID, canisterID, nftInfos[canisterID].FileType, errCode)
+//		id, _ := strconv.Atoi(tokenID)
+//		errUrls = append(errUrls, utils.ErrUrl{Url: url, TokenID: uint32(id), CanisterID: canisterID, Type: nftInfos[canisterID].FileType})
+//	}
+//	ReRequestUrlOld(c, errUrls)
+//}
 
 func TestDownloadCCCFromIC(t *testing.T) {
 	var errUrls []utils.ErrUrl

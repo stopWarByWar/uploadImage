@@ -1,17 +1,12 @@
-package download
+package process
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"strconv"
-	"strings"
 	"time"
 	"uploadImage/s3"
 	"uploadImage/utils"
@@ -102,54 +97,54 @@ func Retry(errPath string) {
 	ioutil.WriteFile(errPath, _data, 0644)
 }
 
-func RetryFromLogs(filePath, logPath string) {
-	nftInfos, err := utils.GetEXTNFTImageInfos(filePath)
-	if err != nil {
-		panic(err)
-	}
-	c := new(http.Client)
-	var errUrls []utils.ErrUrl
-	fi, err := os.Open(logPath)
-	if err != nil {
-		fmt.Printf("Error: %s\n", err)
-		return
-	}
-	defer fi.Close()
-
-	br := bufio.NewReader(fi)
-	for {
-		a, _, c := br.ReadLine()
-		if c == io.EOF {
-			break
-		}
-
-		result := strings.Split(string(a), ",")
-		if len(result) < 5 {
-			fmt.Println(result)
-			continue
-		}
-		canisterID := strings.Split(result[1], ":")[1]
-		tokenID := strings.Split(result[2], ":")[1]
-		url := strings.Split(result[4], ":")[1] + ":" + strings.Split(result[4], ":")[2]
-		errCode := strings.Split(strings.Split(result[0], ":")[1], " ")[1]
-
-		if strings.Contains(errCode, "20") || strings.Contains(errCode, "404") {
-			continue
-		}
-
-		if canisterID == "po6n2-uiaaa-aaaaj-qaiua-cai" {
-			url = "https://po6n2-uiaaa-aaaaj-qaiua-cai.raw.ic0.app/?tokenid="
-			id, _ := strconv.Atoi(tokenID)
-			identifier, _ := utils.TokenId2TokenIdentifier("po6n2-uiaaa-aaaaj-qaiua-cai", uint32(id))
-			url = url + identifier
-		}
-		//fmt.Println(url, tokenID, canisterID, nftInfos[canisterID].FileType, errCode)
-		id, _ := strconv.Atoi(tokenID)
-		errUrls = append(errUrls, utils.ErrUrl{Url: url, TokenID: uint32(id), CanisterID: canisterID, Type: nftInfos[canisterID].FileType})
-	}
-	fmt.Println(len(errUrls))
-	ReRequestUrlOld(c, errUrls)
-}
+//func RetryFromLogs(filePath, logPath string) {
+//	nftInfos, err := utils.GetEXTNFTImageInfos(filePath)
+//	if err != nil {
+//		panic(err)
+//	}
+//	c := new(http.Client)
+//	var errUrls []utils.ErrUrl
+//	fi, err := os.Open(logPath)
+//	if err != nil {
+//		fmt.Printf("Error: %s\n", err)
+//		return
+//	}
+//	defer fi.Close()
+//
+//	br := bufio.NewReader(fi)
+//	for {
+//		a, _, c := br.ReadLine()
+//		if c == io.EOF {
+//			break
+//		}
+//
+//		result := strings.Split(string(a), ",")
+//		if len(result) < 5 {
+//			fmt.Println(result)
+//			continue
+//		}
+//		canisterID := strings.Split(result[1], ":")[1]
+//		tokenID := strings.Split(result[2], ":")[1]
+//		url := strings.Split(result[4], ":")[1] + ":" + strings.Split(result[4], ":")[2]
+//		errCode := strings.Split(strings.Split(result[0], ":")[1], " ")[1]
+//
+//		if strings.Contains(errCode, "20") || strings.Contains(errCode, "404") {
+//			continue
+//		}
+//
+//		if canisterID == "po6n2-uiaaa-aaaaj-qaiua-cai" {
+//			url = "https://po6n2-uiaaa-aaaaj-qaiua-cai.raw.ic0.app/?tokenid="
+//			id, _ := strconv.Atoi(tokenID)
+//			identifier, _ := utils.TokenId2TokenIdentifier("po6n2-uiaaa-aaaaj-qaiua-cai", uint32(id))
+//			url = url + identifier
+//		}
+//		//fmt.Println(url, tokenID, canisterID, nftInfos[canisterID].FileType, errCode)
+//		id, _ := strconv.Atoi(tokenID)
+//		errUrls = append(errUrls, utils.ErrUrl{Url: url, TokenID: uint32(id), CanisterID: canisterID, Type: nftInfos[canisterID].FileType})
+//	}
+//	fmt.Println(len(errUrls))
+//	ReRequestUrlOld(c, errUrls)
+//}
 
 func Upload(bucket string, directory string) error {
 	sess, err := session.NewSession(&aws.Config{

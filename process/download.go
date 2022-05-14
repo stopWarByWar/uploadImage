@@ -1,4 +1,4 @@
-package download
+package process
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	goroutineAmount = 2
+	goroutineAmount = 1
 )
 
 const (
@@ -41,7 +41,7 @@ func Download(c *http.Client, info utils.EXTNFTImageInfo) ([]utils.ErrUrl, error
 	if info.Supply < goroutineAmount {
 		goroutinesAmount++
 		go func() {
-			DownloadSingleRoutine(errUrlChan, c, info.ImageUrlTemplate, info.CanisterID, 0, info.Supply, standard, info.FileType)
+			DownloadSingleRoutine(errUrlChan, c, info.ImageUrlTemplate, info.CanisterID, info.StorageCanister, 0, info.Supply, standard, info.FileType)
 			stopChan <- struct{}{}
 		}()
 	} else {
@@ -59,7 +59,7 @@ func Download(c *http.Client, info utils.EXTNFTImageInfo) ([]utils.ErrUrl, error
 			infoMSg := fmt.Sprintf("start canisterID %s from %d to %d", info.CanisterID, _from, _to)
 			fmt.Println(infoMSg)
 			go func(_from, _to int) {
-				DownloadSingleRoutine(errUrlChan, c, info.ImageUrlTemplate, info.CanisterID, _from, _to, standard, info.FileType)
+				DownloadSingleRoutine(errUrlChan, c, info.ImageUrlTemplate, info.CanisterID, info.StorageCanister, _from, _to, standard, info.FileType)
 				stopChan <- struct{}{}
 			}(_from, _to)
 		}
@@ -81,7 +81,7 @@ func Download(c *http.Client, info utils.EXTNFTImageInfo) ([]utils.ErrUrl, error
 	}
 }
 
-func DownloadSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.Client, urlTemplate, canisterID string, from, to int, standard uint8, fileType string) {
+func DownloadSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.Client, urlTemplate, canisterID, storageCanisterID string, from, to int, standard uint8, fileType string) {
 	infoMSg := fmt.Sprintf("start canisterID %s from %d to %d", canisterID, from, to)
 	fmt.Println(infoMSg)
 	for i := 0; i < to-from; i++ {
@@ -91,7 +91,7 @@ func DownloadSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.Client, ur
 		switch standard {
 		case Identifier:
 			tokenID = uint32(i + from)
-			identifier, _ := utils.TokenId2TokenIdentifier(canisterID, tokenID)
+			identifier, _ := utils.TokenId2TokenIdentifier(storageCanisterID, tokenID)
 			url = fmt.Sprintf(urlTemplate, identifier)
 		case ID:
 			tokenID = uint32(i + from + 1)
@@ -106,6 +106,9 @@ func DownloadSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.Client, ur
 			fmt.Println(errMsg)
 			errUrlChan <- utils.ErrUrl{Url: url, TokenID: tokenID, Type: fileType, CanisterID: canisterID}
 			continue
+		} else {
+			errMsg := fmt.Sprintf("canisterID:%v,tokenID:%v,url:%v", canisterID, tokenID, url)
+			fmt.Println(errMsg)
 		}
 
 		if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 404 {
@@ -122,7 +125,6 @@ func DownloadSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.Client, ur
 			errUrlChan <- utils.ErrUrl{Url: url, TokenID: tokenID, Type: fileType, CanisterID: canisterID}
 			continue
 		}
-		resp.Body.Close()
 
 		filename := fmt.Sprintf("./images/%s/%d.%s", canisterID, tokenID, fileType)
 		fmt.Println(filename)
@@ -134,6 +136,7 @@ func DownloadSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.Client, ur
 			errUrlChan <- utils.ErrUrl{Url: url, TokenID: tokenID, Type: fileType, CanisterID: canisterID}
 			continue
 		}
+		_ = resp.Body.Close()
 	}
 	infoMSg = fmt.Sprintf("finish %s from %d to %d", canisterID, from, to)
 	fmt.Println(infoMSg)
@@ -179,7 +182,7 @@ func DownloadCCCFromIC(client *http.Client, info utils.CCCNFTImagesInfo) ([]util
 		if singeCanisterSupply < goroutineAmount {
 			goroutinesAmount++
 			go func() {
-				DownloadSingleRoutine(errUrlChan, client, urlsTemplate.ImageUrlTemplate, info.CanisterID, urlsTemplate.From, urlsTemplate.To, CCC, info.FileType)
+				DownloadSingleRoutine(errUrlChan, client, urlsTemplate.ImageUrlTemplate, info.CanisterID, info.StorageCanister, urlsTemplate.From, urlsTemplate.To, CCC, info.FileType)
 				stopChan <- struct{}{}
 			}()
 		} else {
@@ -195,7 +198,7 @@ func DownloadCCCFromIC(client *http.Client, info utils.CCCNFTImagesInfo) ([]util
 					_to = (i+1)*elementPerGoroutines + urlsTemplate.From
 				}
 				go func(_from, _to int) {
-					DownloadSingleRoutine(errUrlChan, client, urlsTemplate.ImageUrlTemplate, info.CanisterID, _from, _to, CCC, info.FileType)
+					DownloadSingleRoutine(errUrlChan, client, urlsTemplate.ImageUrlTemplate, info.CanisterID, info.StorageCanister, _from, _to, CCC, info.FileType)
 					stopChan <- struct{}{}
 				}(_from, _to)
 			}
@@ -310,7 +313,7 @@ func DownloadCCCFromIPFSSingleRoutine(errUrlChan chan utils.ErrUrl, client *http
 			errUrlChan <- utils.ErrUrl{Url: info.ImageUrl, TokenID: uint32(info.TokenID), Type: info.ImageFileType, CanisterID: info.CanisterID}
 			continue
 		}
-		resp.Body.Close()
+		_ = resp.Body.Close()
 
 		filename := fmt.Sprintf("./images/%s/%d.%s", info.CanisterID, info.TokenID, info.ImageFileType)
 		fmt.Println(filename)
@@ -350,31 +353,31 @@ func ReRequestUrl(client *http.Client, urls []utils.ErrUrl) ([]utils.ErrUrl, err
 	return newErrUrls, nil
 }
 
-func ReRequestUrlOld(client *http.Client, urls []utils.ErrUrl) error {
-	var data []byte
-	var err error
-	for _, url := range urls {
-		if data, err = DownloadSingle(client, url.Url); err != nil || data == nil {
-			//fmt.Printf("can not download, url:%s, canisterID:%s,tokenID:%s,error: %v\n", url.Url, url.CanisterID, url.TokenID, err)
-			id := url.TokenID
-			identifier, _ := utils.TokenId2TokenIdentifier(url.CanisterID, uint32(id))
-			entrepotUrl := fmt.Sprintf("https://images.entrepot.app/t/%s/%s", url.CanisterID, identifier)
-			if data, err = DownloadSingle(client, entrepotUrl); err != nil {
-				fmt.Printf("can not download, url:%s, canisterID:%s,tokenID:%d,error: %v\n", entrepotUrl, url.CanisterID, url.TokenID, err)
-			}
-		}
-		filename := fmt.Sprintf("./images/%s/%d.%s", url.CanisterID, url.TokenID, url.Type)
-		//fmt.Println(filename)
-		err = ioutil.WriteFile(filename, data, 0766)
-		if err != nil {
-			path := fmt.Sprintf("./images/%s", url.CanisterID)
-			if err := os.MkdirAll(path, os.ModePerm); err != nil {
-				panic(err)
-			}
-			if err = ioutil.WriteFile(filename, data, 0766); err != nil {
-				fmt.Printf("can not download, url:%s, canisterID:%s,tokenID:%d,error: %v\n", url.Url, url.CanisterID, url.TokenID, err)
-			}
-		}
-	}
-	return nil
-}
+//func ReRequestUrlOld(client *http.Client, urls []utils.ErrUrl) error {
+//	var data []byte
+//	var err error
+//	for _, url := range urls {
+//		if data, err = DownloadSingle(client, url.Url); err != nil || data == nil {
+//			//fmt.Printf("can not download, url:%s, canisterID:%s,tokenID:%s,error: %v\n", url.Url, url.CanisterID, url.TokenID, err)
+//			id := url.TokenID
+//			identifier, _ := utils.TokenId2TokenIdentifier(url.CanisterID, uint32(id))
+//			entrepotUrl := fmt.Sprintf("https://images.entrepot.app/t/%s/%s", url.CanisterID, identifier)
+//			if data, err = DownloadSingle(client, entrepotUrl); err != nil {
+//				fmt.Printf("can not download, url:%s, canisterID:%s,tokenID:%d,error: %v\n", entrepotUrl, url.CanisterID, url.TokenID, err)
+//			}
+//		}
+//		filename := fmt.Sprintf("./images/%s/%d.%s", url.CanisterID, url.TokenID, url.Type)
+//		//fmt.Println(filename)
+//		err = ioutil.WriteFile(filename, data, 0766)
+//		if err != nil {
+//			path := fmt.Sprintf("./images/%s", url.CanisterID)
+//			if err := os.MkdirAll(path, os.ModePerm); err != nil {
+//				panic(err)
+//			}
+//			if err = ioutil.WriteFile(filename, data, 0766); err != nil {
+//				fmt.Printf("can not download, url:%s, canisterID:%s,tokenID:%d,error: %v\n", url.Url, url.CanisterID, url.TokenID, err)
+//			}
+//		}
+//	}
+//	return nil
+//}

@@ -7,6 +7,11 @@ import (
 	"testing"
 )
 
+func TestID(t *testing.T) {
+	identifier, _ := TokenId2TokenIdentifier("ep54t-xiaaa-aaaah-qcdza-cai", 0)
+	t.Log(identifier)
+}
+
 func TestCompressImageResource(t *testing.T) {
 	data, err := ioutil.ReadFile("1.png")
 	if err != nil {

@@ -62,6 +62,7 @@ func GetEXTNFTImageInfos(path string) (map[string]EXTNFTImageInfo, error) {
 			Standard:         rows[i][5],
 			Supply:           supply,
 			FileType:         rows[i][7],
+			StorageCanister:  rows[i][8],
 		}
 	}
 	return nftInfos, nil

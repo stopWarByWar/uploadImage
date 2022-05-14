@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
-	"uploadImage/download"
+	"uploadImage/process"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -26,7 +26,7 @@ var downloadCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		download.DownloadImages(filePath)
+		process.DownloadImages(filePath)
 	},
 }
 
@@ -39,7 +39,7 @@ var downloadCCCCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		download.DownloadCCCImages(filePath)
+		process.DownloadCCCImages(filePath)
 	},
 }
 
@@ -56,7 +56,7 @@ var uploadCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		_ = download.Upload(bucket, filePath)
+		_ = process.Upload(bucket, filePath)
 	},
 }
 
@@ -69,7 +69,7 @@ var retryCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		download.Retry(errPath)
+		process.Retry(errPath)
 	},
 }
 
@@ -87,7 +87,7 @@ var retryFromLogCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		download.RetryFromLogs(filePath, errPath)
+		process.RetryFromLogs(filePath, errPath)
 	},
 }
 

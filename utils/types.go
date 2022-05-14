@@ -13,6 +13,7 @@ type EXTNFTImageInfo struct {
 	Supply           int    `json:"supply"`
 	Standard         string `json:"standard"`
 	FileType         string `json:"file_type"`
+	StorageCanister  string `json:"storage_canister"`
 }
 
 type CCCNFTImagesInfo struct {
@@ -23,6 +24,7 @@ type CCCNFTImagesInfo struct {
 	FileType          string                `json:"file_type"`
 	Type              string                `json:"type"`
 	ImageUrlTemplate  string                `json:"image_url_template"`
+	StorageCanister   string                `json:"storage_canister"`
 }
 
 type CCCImageUrlTemplate struct {
@@ -39,12 +41,13 @@ type ErrUrl struct {
 }
 
 type CCCNFTInfo struct {
-	CanisterID    string `json:"canister_id"`
-	TokenID       uint64 `json:"token_id"`
-	ImageUrl      string `json:"image_url"`
-	VideoUrl      string `json:"video_url"`
-	ImageFileType string `json:"file_type"`
-	VideoFileType string `json:"video_file_type"`
+	CanisterID      string `json:"canister_id"`
+	TokenID         uint64 `json:"token_id"`
+	ImageUrl        string `json:"image_url"`
+	VideoUrl        string `json:"video_url"`
+	ImageFileType   string `json:"file_type"`
+	VideoFileType   string `json:"video_file_type"`
+	StorageCanister string `json:"storage_canister"`
 }
 
 type textOp struct {
