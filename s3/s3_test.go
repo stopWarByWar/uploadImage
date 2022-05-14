@@ -104,3 +104,16 @@ func TestPutDirectory(t *testing.T) {
 		return
 	}
 }
+
+func TestSetBucket(t *testing.T) {
+	bucket := "pyd-nft"
+	sess, _ := session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1")},
+	)
+
+	if err := SetBucketPublic(sess, &bucket); err != nil {
+		t.Log(err)
+	}
+
+	t.Log("Bucket " + bucket + " is now public")
+}

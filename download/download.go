@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	goroutineAmount = 10
+	goroutineAmount = 2
 )
 
 const (
@@ -239,7 +239,7 @@ func DownloadCCCFromIPFS(client *http.Client, infos []utils.CCCNFTInfo) ([]utils
 	if supply < goroutineAmount {
 		goroutinesAmount++
 		go func() {
-			DownloadCCCFromICSingleRoutine(errUrlChan, client, infos)
+			DownloadCCCFromIPFSSingleRoutine(errUrlChan, client, infos)
 			stopChan <- struct{}{}
 		}()
 	} else {
@@ -258,7 +258,7 @@ func DownloadCCCFromIPFS(client *http.Client, infos []utils.CCCNFTInfo) ([]utils
 			infoMSg := fmt.Sprintf("start canisterID %s from %d to %d", infos[0].CanisterID, from, to)
 			fmt.Println(infoMSg)
 			go func(infos []utils.CCCNFTInfo) {
-				DownloadCCCFromICSingleRoutine(errUrlChan, client, infos)
+				DownloadCCCFromIPFSSingleRoutine(errUrlChan, client, infos)
 				stopChan <- struct{}{}
 			}(infos[from:to])
 		}
@@ -286,7 +286,7 @@ Loop:
 	return errUrls, nil
 }
 
-func DownloadCCCFromICSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.Client, infos []utils.CCCNFTInfo) {
+func DownloadCCCFromIPFSSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.Client, infos []utils.CCCNFTInfo) {
 	for _, info := range infos {
 		resp, err := client.Get(info.ImageUrl)
 		if err != nil {

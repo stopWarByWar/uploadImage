@@ -35,7 +35,7 @@ func listBuckets() {
 }
 
 func exitErrorf(msg string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, msg+"\n", args...)
+	_, _ = fmt.Fprintf(os.Stderr, msg+"\n", args...)
 	os.Exit(1)
 }
 
@@ -162,24 +162,6 @@ func DeleteItems(sess *session.Session, bucket *string) error {
 	return nil
 }
 
-func SetBucketPublic(sess *session.Session, bucket *string) error {
-	// snippet-start:[s3.go.make_bucket_public.call]
-	svc := s3.New(sess)
-
-	params := &s3.PutBucketAclInput{
-		Bucket: bucket,
-		ACL:    aws.String("public-read"),
-	}
-
-	_, err := svc.PutBucketAcl(params)
-	// snippet-end:[s3.go.make_bucket_public.call]
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 type DirectoryIterator struct {
 	filePaths []string
 	bucket    string
@@ -215,7 +197,7 @@ func UploadDirectory(sess *session.Session, bucket *string, path *string) error 
 // NewDirectoryIterator builds a new DirectoryIterator
 func NewDirectoryIterator(bucket *string, dir *string) s3manager.BatchUploadIterator {
 	var paths []string
-	filepath.Walk(*dir, func(path string, info os.FileInfo, err error) error {
+	_ = filepath.Walk(*dir, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
 			paths = append(paths, path)
 		}
@@ -241,7 +223,7 @@ func (di *DirectoryIterator) Next() bool {
 	di.next.path = di.filePaths[0]
 	di.filePaths = di.filePaths[1:]
 
-	return true && di.Err() == nil
+	return di.Err() == nil
 }
 
 // Err returns error of DirectoryIterator
@@ -262,4 +244,22 @@ func (di *DirectoryIterator) UploadObject() s3manager.BatchUploadObject {
 			return f.Close()
 		},
 	}
+}
+
+func SetBucketPublic(sess *session.Session, bucket *string) error {
+	// snippet-start:[s3.go.make_bucket_public.call]
+	svc := s3.New(sess)
+
+	params := &s3.PutBucketAclInput{
+		Bucket: bucket,
+		ACL:    aws.String("public-read"),
+	}
+
+	_, err := svc.PutBucketAcl(params)
+	// snippet-end:[s3.go.make_bucket_public.call]
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
