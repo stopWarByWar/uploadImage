@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"os"
 	"uploadImage/process"
@@ -78,16 +77,16 @@ var retryFromLogCmd = &cobra.Command{
 	Short: "retry fetch nft images from ic by log",
 	Long:  `retry fetch nft images from ic by log.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		filePath, err := cmd.Flags().GetString("nft-file")
-		if err != nil {
-			panic(err)
-		}
-		errPath, err := cmd.Flags().GetString("log-file")
-		fmt.Println(errPath)
-		if err != nil {
-			panic(err)
-		}
-		process.RetryFromLogs(filePath, errPath)
+		//filePath, err := cmd.Flags().GetString("nft-file")
+		//if err != nil {
+		//	panic(err)
+		//}
+		//errPath, err := cmd.Flags().GetString("log-file")
+		//fmt.Println(errPath)
+		//if err != nil {
+		//	panic(err)
+		//}
+		//process.RetryFromLogs(filePath, errPath)
 	},
 }
 
