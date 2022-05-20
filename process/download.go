@@ -106,9 +106,6 @@ func DownloadSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.Client, ur
 			fmt.Println(errMsg)
 			errUrlChan <- utils.ErrUrl{Url: url, TokenID: tokenID, Type: fileType, CanisterID: canisterID}
 			continue
-		} else {
-			errMsg := fmt.Sprintf("canisterID:%v,tokenID:%v,url:%v", canisterID, tokenID, url)
-			fmt.Println(errMsg)
 		}
 
 		if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 404 {

@@ -105,6 +105,23 @@ func PutFile(sess *session.Session, bucket *string, filename *string, data []byt
 	return nil
 }
 
+func GetFile(sess *session.Session, bucket *string, filename *string) ([]byte, error) {
+	buf := aws.NewWriteAtBuffer([]byte{})
+	// snippet-start:[s3.go.download_object.call]
+	downloader := s3manager.NewDownloader(sess)
+	_, err := downloader.Download(buf,
+		&s3.GetObjectInput{
+			Bucket: bucket,
+			Key:    filename,
+		})
+	// snippet-end:[s3.go.download_object.call]
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
 func GetObjects(sess *session.Session, bucket *string) (*s3.ListObjectsV2Output, error) {
 	// snippet-start:[s3.go.list_objects.call]
 	svc := s3.New(sess)
@@ -257,6 +274,32 @@ func SetBucketPublic(sess *session.Session, bucket *string) error {
 
 	_, err := svc.PutBucketAcl(params)
 	// snippet-end:[s3.go.make_bucket_public.call]
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DownloadObject(sess *session.Session, filename *string, bucket *string) error {
+	// snippet-start:[s3.go.download_object.create]
+	file, err := os.Create(*filename)
+	// snippet-end:[s3.go.download_object.create]
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	// snippet-start:[s3.go.download_object.call]
+	downloader := s3manager.NewDownloader(sess)
+
+	_, err = downloader.Download(file,
+		&s3.GetObjectInput{
+			Bucket: bucket,
+			Key:    filename,
+		})
+	// snippet-end:[s3.go.download_object.call]
 	if err != nil {
 		return err
 	}
