@@ -97,20 +97,20 @@ func TestDeleteItems(t *testing.T) {
 }
 
 func TestPutDirectory(t *testing.T) {
-	bucket := "pyd-nft"
-	directory := "../download/images/ctt6t-faaaa-aaaah-qcpbq-cai"
+	bucket := "nft-info"
+	directory := "../s3/"
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
 	)
 	err = UploadDirectory(sess, &bucket, &directory)
 	if err != nil {
-		fmt.Println("Got an error uploading directory " + directory + " to bucket " + bucket)
+		fmt.Println("Got an error uploading directory "+directory+" to bucket "+bucket, "error:", err)
 		return
 	}
 }
 
 func TestSetBucket(t *testing.T) {
-	bucket := "pyd-nft"
+	bucket := "nft-info"
 	sess, _ := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
 	)

@@ -253,9 +253,11 @@ func (di *DirectoryIterator) UploadObject() s3manager.BatchUploadObject {
 	f := di.next.f
 	return s3manager.BatchUploadObject{
 		Object: &s3manager.UploadInput{
-			Bucket: &di.bucket,
-			Key:    &di.next.path,
-			Body:   f,
+			Bucket:      &di.bucket,
+			Key:         &di.next.path,
+			Body:        f,
+			ACL:         aws.String("public-read"),
+			ContentType: aws.String("image/svg+xml"),
 		},
 		After: func() error {
 			return f.Close()
