@@ -8,7 +8,7 @@ import (
 )
 
 func TestID(t *testing.T) {
-	identifier, _ := TokenId2TokenIdentifier("ep54t-xiaaa-aaaah-qcdza-cai", 0)
+	identifier, _ := TokenId2TokenIdentifier("5movr-diaaa-aaaak-aaftq-cai", 0)
 	t.Log(identifier)
 }
 
