@@ -98,7 +98,7 @@ func TestDeleteItems(t *testing.T) {
 
 func TestPutDirectory(t *testing.T) {
 	bucket := "nft-info"
-	directory := "../s3/"
+	directory := "../process/images"
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
 	)

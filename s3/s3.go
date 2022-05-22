@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func listBuckets() {
@@ -183,8 +184,9 @@ type DirectoryIterator struct {
 	filePaths []string
 	bucket    string
 	next      struct {
-		path string
-		f    *os.File
+		path        string
+		f           *os.File
+		ContentType string
 	}
 	err error
 }
@@ -238,6 +240,17 @@ func (di *DirectoryIterator) Next() bool {
 	di.err = err
 	di.next.f = f
 	di.next.path = di.filePaths[0]
+	if strings.HasSuffix(di.next.path, "svg") {
+		di.next.ContentType = "image/svg+xml"
+	} else if strings.HasSuffix(di.next.path, "png") {
+		di.next.ContentType = "image/png"
+	} else if strings.HasSuffix(di.next.path, "gif") {
+		di.next.ContentType = "image/gif"
+	} else if strings.HasSuffix(di.next.path, "jpg") {
+		di.next.ContentType = "image/jpg"
+	} else if strings.HasSuffix(di.next.path, "jpeg") {
+		di.next.ContentType = "image/jpeg"
+	}
 	di.filePaths = di.filePaths[1:]
 
 	return di.Err() == nil
@@ -257,7 +270,7 @@ func (di *DirectoryIterator) UploadObject() s3manager.BatchUploadObject {
 			Key:         &di.next.path,
 			Body:        f,
 			ACL:         aws.String("public-read"),
-			ContentType: aws.String("image/svg+xml"),
+			ContentType: aws.String(di.next.ContentType),
 		},
 		After: func() error {
 			return f.Close()

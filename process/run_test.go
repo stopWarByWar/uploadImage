@@ -7,6 +7,5 @@ func TestRunDownloadCCC(t *testing.T) {
 }
 
 func TestRunownloadEXT(t *testing.T) {
-	DownloadImages("./test_file/nft_image_test.xlsx")
-
+	DownloadImages("../files/nft_image.xlsx")
 }

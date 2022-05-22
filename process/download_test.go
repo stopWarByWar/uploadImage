@@ -27,7 +27,7 @@ func TestDownload(t *testing.T) {
 func TestDownloadAll(t *testing.T) {
 	start := time.Now()
 	c := new(http.Client)
-	nftInfos, err := utils.GetEXTNFTImageInfos("./nft_image.xlsx")
+	nftInfos, err := utils.GetEXTNFTImageInfos("./test_file/nft_image_test.xlsx")
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
