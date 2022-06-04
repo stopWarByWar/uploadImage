@@ -147,7 +147,7 @@ func TestDownloadCCCFromIC(t *testing.T) {
 
 func TestDownloadCCCFromIPFS(t *testing.T) {
 	var errUrls []utils.ErrUrl
-	data, err := ioutil.ReadFile("./test_file/ccc_nft_ifps_test.json")
+	data, err := ioutil.ReadFile("./test_file/ccc_nft_ipfs_test.json")
 	if err != nil {
 		panic(err)
 	}
@@ -179,7 +179,39 @@ func TestDownloadCCCFromIPFS(t *testing.T) {
 
 func TestDownloadCCCFromIPFS1(t *testing.T) {
 	var errUrls []utils.ErrUrl
-	data, err := ioutil.ReadFile("./test_file/ccc_nft_ifps_1_test.json")
+	data, err := ioutil.ReadFile("./test_file/ccc_nft_ipfs_1_test.json")
+	if err != nil {
+		panic(err)
+	}
+	var nftInfos map[string]utils.CCCNFTImagesInfo
+	if err := json.Unmarshal(data, &nftInfos); err != nil {
+		panic(err)
+	}
+
+	c := new(http.Client)
+	for _, info := range nftInfos {
+		var singleNFTInfos []utils.CCCNFTInfo
+		singleNFTInfos, err = utils.GetCCCNFTImageURL(info.CanisterID, info.FileType, info.ImageUrlTemplate, info.Type)
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+		errUrl, err := DownloadCCCFromIPFS(c, singleNFTInfos)
+		if err != nil {
+			fmt.Sprintf("can not download CCC images with error: %v,canisterID:%s", err, info.CanisterID)
+			continue
+		}
+		errUrls = append(errUrls, errUrl...)
+	}
+	errURLData, err := json.Marshal(errUrls)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	t.Log(ioutil.WriteFile("err.json", errURLData, 0644))
+}
+
+func TestDownloadCCCFromIPFS2(t *testing.T) {
+	var errUrls []utils.ErrUrl
+	data, err := ioutil.ReadFile("./test_file/ccc_nft_ipfs_2_test.json")
 	if err != nil {
 		panic(err)
 	}

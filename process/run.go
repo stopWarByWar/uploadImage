@@ -5,8 +5,12 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/nfnt/resize"
+	"image/gif"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"time"
 	"uploadImage/s3"
 	"uploadImage/utils"
@@ -32,8 +36,10 @@ func DownloadImages(filePath string) {
 		errUrls = append(errUrls, errUrl...)
 	}
 
-	errURLData, _ := json.Marshal(errUrls)
-	_ = ioutil.WriteFile("err.json", errURLData, 0644)
+	if len(errUrls) != 0 {
+		errURLData, _ := json.Marshal(errUrls)
+		_ = ioutil.WriteFile("err.json", errURLData, 0644)
+	}
 	fmt.Println("successfully download ext images")
 	fmt.Println(time.Now().Sub(start))
 }
@@ -79,8 +85,10 @@ func DownloadCCCImages(filePath string) {
 		fmt.Printf("successfully download ccc images, canisterID:%s\n", info.CanisterID)
 	}
 
-	errURLData, _ := json.Marshal(errUrls)
-	_ = ioutil.WriteFile("err.json", errURLData, 0644)
+	if len(errUrls) != 0 {
+		errURLData, _ := json.Marshal(errUrls)
+		_ = ioutil.WriteFile("err.json", errURLData, 0644)
+	}
 	fmt.Printf("successfully download ccc images\n")
 	fmt.Println(time.Now().Sub(start))
 }
@@ -98,6 +106,7 @@ func Retry(errPath string) {
 }
 
 func Upload(bucket string, directory string) error {
+	start := time.Now()
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
 	)
@@ -112,5 +121,43 @@ func Upload(bucket string, directory string) error {
 	}
 	msg := fmt.Sprintf("upload directory %s successfully", directory)
 	fmt.Println(msg)
+	fmt.Println(time.Now().Sub(start))
 	return nil
+}
+
+//func CompassGifs(dir string) {
+//	var paths []string
+//	_ = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+//		if !info.IsDir() {
+//			paths = append(paths, path)
+//		}
+//		return nil
+//	})
+//
+//	for _, path := range paths {
+//		if err := compassGif(path); err != nil {
+//			panic(err)
+//		}
+//	}
+//
+//}
+
+func compassGif(path string) error {
+	file, err := os.Open(path)
+	if err != nil {
+		panic(err)
+	}
+	image, err := gif.Decode(file)
+	if err != nil {
+		panic(err)
+	}
+	m := resize.Resize(400, 400, image, resize.Bilinear)
+	out, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer out.Close()
+
+	// write new image to file
+	return gif.Encode(out, m, nil)
 }

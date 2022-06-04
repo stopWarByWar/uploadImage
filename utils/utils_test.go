@@ -35,7 +35,7 @@ func TestSetCCCNftInfo(t *testing.T) {
 
 func TestGetCCCNFTImageURL(t *testing.T) {
 	tokenID := mapSet.NewSet()
-	result, err := GetCCCNFTImageURL("k3wif-yyaaa-aaaah-qc2ca-cai", "png", "https://gateway.filedrive.io/ipfs/%s", "ipfs-1")
+	result, err := GetCCCNFTImageURL("nusra-3iaaa-aaaah-qc2ta-cai", "jpeg", "https://gateway.filedrive.io/ipfs/%s", "ipfs-2")
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

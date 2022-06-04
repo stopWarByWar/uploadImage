@@ -76,3 +76,8 @@ type NFTLinkInfo struct {
 	PhotoLink string `ic:"photoLink"`
 	VideoLink string `ic:"videoLink"`
 }
+
+type NFTPhotoLink struct {
+	TokenIndex  uint64 `ic:"0"`
+	NFTLinkInfo string `ic:"1"`
+}

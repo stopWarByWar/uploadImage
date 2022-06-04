@@ -144,6 +144,24 @@ func GetCCCNFTImageURL(canisterID string, fileType string, imageUrlTemplate stri
 				ImageFileType: fileType,
 			})
 		}
+	case "ipfs-2":
+		methodName := "getAllNftPhotoLink"
+		arg, _ := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
+		_, result, _, err := _agent.Query(canisterID, methodName, arg)
+		if err != nil {
+			return nil, err
+		}
+		var myResult []NFTPhotoLink
+		utils.Decode(&myResult, result[0])
+		for _, token := range myResult {
+			imageUrl := fmt.Sprintf(imageUrlTemplate, token.NFTLinkInfo)
+			infos = append(infos, CCCNFTInfo{
+				CanisterID:    canisterID,
+				TokenID:       token.TokenIndex,
+				ImageUrl:      imageUrl,
+				ImageFileType: fileType,
+			})
+		}
 	}
 	return infos, nil
 }

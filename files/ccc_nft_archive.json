@@ -157,5 +157,15 @@
     "file_type": "png",
     "type": "ipfs-1",
     "image_url_template":"https://gateway.filedrive.io/ipfs/%s"
+  },
+
+  "nusra-3iaaa-aaaah-qc2ta-cai":   {
+    "canister_id": "nusra-3iaaa-aaaah-qc2ta-cai",
+    "name": "3D Crystals",
+    "image_url_templates": [],
+    "supply": 2626,
+    "file_type": "jpeg",
+    "type": "ipfs-2",
+    "image_url_template":"https://gateway.filedrive.io/ipfs/%s"
   }
 }

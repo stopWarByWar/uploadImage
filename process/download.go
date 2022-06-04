@@ -123,6 +123,12 @@ func DownloadSingleRoutine(errUrlChan chan utils.ErrUrl, client *http.Client, ur
 			continue
 		}
 
+		if len(data) == 0 {
+			errMsg := fmt.Sprintf("empty images,canisterID:%v,tokenID:%v", canisterID, tokenID)
+			fmt.Println(errMsg)
+			continue
+		}
+
 		filename := fmt.Sprintf("./images/%s/%d.%s", canisterID, tokenID, fileType)
 		fmt.Println(filename)
 		err = ioutil.WriteFile(filename, data, 0766)
@@ -312,6 +318,12 @@ func DownloadCCCFromIPFSSingleRoutine(errUrlChan chan utils.ErrUrl, client *http
 		}
 		_ = resp.Body.Close()
 
+		if len(data) == 0 {
+			errMsg := fmt.Sprintf("empty images,canisterID:%v,tokenID:%v", info.CanisterID, info.TokenID)
+			fmt.Println(errMsg)
+			continue
+		}
+
 		filename := fmt.Sprintf("./images/%s/%d.%s", info.CanisterID, info.TokenID, info.ImageFileType)
 		fmt.Println(filename)
 		err = ioutil.WriteFile(filename, data, 0766)
@@ -334,9 +346,14 @@ func ReRequestUrl(client *http.Client, urls []utils.ErrUrl) ([]utils.ErrUrl, err
 	}
 	for _, url := range urls {
 		data, err := DownloadSingle(client, url.Url)
-		if err != nil || data == nil {
+		if err != nil {
 			fmt.Printf("can not download url %s with error: %v", url.Url, err)
 			newErrUrls = append(newErrUrls, url)
+			continue
+		}
+
+		if len(data) == 0 {
+			continue
 		}
 		filename := fmt.Sprintf("./images/%s/%d.%s", url.CanisterID, url.TokenID, url.Type)
 		fmt.Println(filename)
