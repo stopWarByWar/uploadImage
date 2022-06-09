@@ -1,11 +1,15 @@
 package process
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/nfnt/resize"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	gormLogger "gorm.io/gorm/logger"
 	"image/gif"
 	"io/ioutil"
 	"log"
@@ -15,6 +19,71 @@ import (
 	"uploadImage/s3"
 	"uploadImage/utils"
 )
+
+func GetCCCImagesURL(filePath string, dns string, autoMigrate bool) {
+	_db, err := sql.Open("mysql", dns)
+	if err != nil {
+		panic(err)
+	}
+	db, err := gorm.Open(mysql.New(mysql.Config{Conn: _db}), &gorm.Config{
+		Logger: gormLogger.Default.LogMode(gormLogger.Error),
+	})
+	if err != nil {
+		panic(err)
+	}
+	if autoMigrate {
+		err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").AutoMigrate(&ImagesURL{})
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	start := time.Now()
+	var cccInfos map[string]utils.CCCNFTImagesInfo
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		panic(err.Error())
+	}
+	if err = json.Unmarshal(data, &cccInfos); err != nil {
+		panic(err.Error())
+	}
+
+	for name, info := range cccInfos {
+		fmt.Println(name, info.Supply, info.Type)
+		if info.Type == "ic" {
+			err := GetCCCUrlsFromIC(db, info)
+			if err != nil {
+				errMsg := fmt.Sprintf("can not download images from ic error:%v,url:%v", err, info.ImageUrlTemplate)
+				fmt.Println(errMsg)
+				panic(err)
+			}
+		} else {
+			singleNFTInfos, err := utils.GetCCCNFTImageURL(info.CanisterID, info.FileType, info.ImageUrlTemplate, info.Type)
+			if err != nil {
+				errMsg := fmt.Sprintf("can not get images url from ic with error:%v,url:%v", err, info.ImageUrlTemplate)
+				fmt.Println(errMsg)
+				continue
+			}
+			var urls []ImagesURL
+			for i, nftInfo := range singleNFTInfos {
+				//fmt.Println(nftInfo.ImageUrl)
+				urls = append(urls, ImagesURL{CanisterID: nftInfo.CanisterID, TokenID: uint32(nftInfo.TokenID), Url: nftInfo.ImageUrl})
+				if len(urls) >= 500 || i == len(singleNFTInfos)-1 {
+					if err := db.Save(&urls).Error; err != nil {
+						fmt.Printf("can not save images urls canister:%s,tokenid:%d,url:%s,err:%v\n", nftInfo.CanisterID, nftInfo.TokenID, nftInfo.ImageUrl, err)
+						panic(err)
+					}
+					urls = []ImagesURL{}
+				}
+			}
+		}
+		fmt.Printf("successfully download ccc images, canisterID:%s\n", info.CanisterID)
+	}
+
+	fmt.Printf("successfully download ccc images\n")
+	fmt.Println(time.Now().Sub(start))
+
+}
 
 func DownloadImages(filePath string) {
 	var errUrls []utils.ErrUrl
@@ -160,4 +229,17 @@ func compassGif(path string) error {
 
 	// write new image to file
 	return gif.Encode(out, m, nil)
+}
+
+type ImagesURL struct {
+	CanisterID string `gorm:"column:canister_id;type:char(27) not null;primaryKey:token_instance,priority 1" json:"canister_id"`
+	TokenID    uint32 `gorm:"column:token_id;primaryKey:token_instance,priority 2" json:"token_id"`
+	Url        string `gorm:"column:url" json:"url"`
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func (ImagesURL) TableName() string {
+	return "nft_image_urls"
 }

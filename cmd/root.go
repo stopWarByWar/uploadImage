@@ -42,6 +42,27 @@ var downloadCCCCmd = &cobra.Command{
 	},
 }
 
+var getCCCImageUrlsCmd = &cobra.Command{
+	Use:   "getCCCImageUrls",
+	Short: "get CCC nft images urls",
+	Long:  `et CCC nft images urls.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		filePath, err := cmd.Flags().GetString("nft-file")
+		if err != nil {
+			panic(err)
+		}
+		db, err := cmd.Flags().GetString("db-url")
+		if err != nil {
+			panic(err)
+		}
+		autoMigrate, err := cmd.Flags().GetBool("auto-migrate")
+		if err != nil {
+			panic(err)
+		}
+		process.GetCCCImagesURL(filePath, db, autoMigrate)
+	},
+}
+
 var uploadCmd = &cobra.Command{
 	Use:   "upload",
 	Short: "upload nft images to s3",
@@ -116,4 +137,9 @@ func init() {
 
 	rootCmd.AddCommand(downloadCCCCmd)
 	downloadCCCCmd.Flags().StringP("nft-file", "n", "./files/ccc_nft.json", "nft image info file path")
+
+	rootCmd.AddCommand(getCCCImageUrlsCmd)
+	getCCCImageUrlsCmd.Flags().StringP("nft-file", "n", "./files/ccc_nft.json", "nft image info file path")
+	getCCCImageUrlsCmd.Flags().StringP("db-url", "d", "root:xyz12345@(localhost:3306)/xyz?charset=utf8&parseTime=true&parseTime=true", "mysql db url path")
+	getCCCImageUrlsCmd.Flags().BoolP("auto-migrate", "m", false, "auto migrate table")
 }

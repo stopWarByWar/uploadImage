@@ -81,3 +81,13 @@ type NFTPhotoLink struct {
 	TokenIndex  uint64 `ic:"0"`
 	NFTLinkInfo string `ic:"1"`
 }
+
+type StringOp struct {
+	Some string `ic:"some"`
+	None uint8  `ic:"none"`
+}
+
+type IPFS3ImageLink struct {
+	ImageLink StringOp `ic:"0"`
+	VideoLink StringOp `ic:"1"`
+}

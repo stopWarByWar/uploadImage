@@ -14,6 +14,7 @@ import (
 	"image/draw"
 	"image/jpeg"
 	"io/ioutil"
+	"math/big"
 	"os"
 	"strconv"
 )
@@ -103,26 +104,22 @@ func GetCCCNFTImageURL(canisterID string, fileType string, imageUrlTemplate stri
 	_agent := agent.New(true, "")
 	switch types {
 	case "ipfs":
-		methodName := "getRegistry"
+		methodName := "getAllNftPhotoLink"
 		arg, _ := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
 		_, result, _, err := _agent.Query(canisterID, methodName, arg)
 		if err != nil {
 			return nil, err
 		}
-		var myResult []registry
+		var myResult []NFTPhotoLink
 		utils.Decode(&myResult, result[0])
-		for _, registry := range myResult {
-			for _, token := range registry.Tokens {
-				imageUrl := token.PhotoLink.Some
-				videoUrl := token.VideoLink.Some
-				infos = append(infos, CCCNFTInfo{
-					CanisterID:    canisterID,
-					TokenID:       token.Index,
-					ImageUrl:      imageUrl,
-					VideoUrl:      videoUrl,
-					ImageFileType: fileType,
-				})
-			}
+		for _, token := range myResult {
+
+			infos = append(infos, CCCNFTInfo{
+				CanisterID:    canisterID,
+				TokenID:       token.TokenIndex,
+				ImageUrl:      token.NFTLinkInfo,
+				ImageFileType: fileType,
+			})
 		}
 	case "ipfs-1":
 		methodName := "getAllNftLinkInfo"
@@ -155,6 +152,32 @@ func GetCCCNFTImageURL(canisterID string, fileType string, imageUrlTemplate stri
 		utils.Decode(&myResult, result[0])
 		for _, token := range myResult {
 			imageUrl := fmt.Sprintf(imageUrlTemplate, token.NFTLinkInfo)
+			infos = append(infos, CCCNFTInfo{
+				CanisterID:    canisterID,
+				TokenID:       token.TokenIndex,
+				ImageUrl:      imageUrl,
+				ImageFileType: fileType,
+			})
+		}
+	case "ipfs-3":
+		methodName := "getLinkInfoByIndexArr"
+		input := idl.NewVec(new(idl.Nat))
+		var inputValue []interface{}
+		for i := 0; i < 1000; i++ {
+			inputValue = append(inputValue, big.NewInt(int64(i)))
+		}
+
+		param, err := idl.Encode([]idl.Type{input}, []interface{}{inputValue})
+		if err != nil {
+			panic(err)
+		}
+		_, result, _, err := _agent.Query(canisterID, methodName, param)
+
+		var myResult []IPFS3ImageLink
+		utils.Decode(&myResult, result[0])
+		fmt.Println(myResult)
+		for _, token := range myResult {
+			imageUrl := fmt.Sprintf(imageUrlTemplate, token.ImageLink)
 			infos = append(infos, CCCNFTInfo{
 				CanisterID:    canisterID,
 				TokenID:       token.TokenIndex,

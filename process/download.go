@@ -3,6 +3,7 @@ package process
 import (
 	"errors"
 	"fmt"
+	"gorm.io/gorm"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -395,3 +396,45 @@ func ReRequestUrl(client *http.Client, urls []utils.ErrUrl) ([]utils.ErrUrl, err
 //	}
 //	return nil
 //}
+
+func GetCCCUrlsFromIC(db *gorm.DB, info utils.CCCNFTImagesInfo) error {
+	if len(info.ImageUrlTemplates) == 0 {
+		return nil
+	}
+
+	storageCanisterID := info.StorageCanister
+	var urls []ImagesURL
+	for _, template := range info.ImageUrlTemplates {
+		from := template.From
+		to := template.To
+
+		for i := 0; i < to-from; i++ {
+			var url string
+			var tokenID uint32
+			//fmt.Println(i + from)
+			switch CCC {
+			case Identifier:
+				tokenID = uint32(i + from)
+				identifier, _ := utils.TokenId2TokenIdentifier(storageCanisterID, tokenID)
+				url = fmt.Sprintf(template.ImageUrlTemplate, identifier)
+			case ID:
+				tokenID = uint32(i + from + 1)
+				url = fmt.Sprintf(template.ImageUrlTemplate, tokenID)
+			case CCC:
+				tokenID = uint32(i + from)
+				url = fmt.Sprintf(template.ImageUrlTemplate, tokenID)
+			}
+			//fmt.Println(url)
+			urls = append(urls, ImagesURL{CanisterID: info.CanisterID, TokenID: tokenID, Url: url})
+
+			if len(urls) >= 500 || i == to-from-1 {
+				if err := db.Save(&urls).Error; err != nil {
+					fmt.Printf("can not save images urls canister:%s,tokenid:%d,url:%s,err:%v\n", info.CanisterID, tokenID, url, err)
+					return err
+				}
+				urls = []ImagesURL{}
+			}
+		}
+	}
+	return nil
+}
