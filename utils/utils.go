@@ -160,10 +160,19 @@ func GetCCCNFTImageURL(canisterID string, fileType string, imageUrlTemplate stri
 			})
 		}
 	case "ipfs-3":
+		methodNameSupply := "getSuppy"
+		arg, _ := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
+		_, result, _, err := _agent.Query(canisterID, methodNameSupply, arg)
+		if err != nil {
+			return nil, err
+		}
+		var supply uint64
+		utils.Decode(&supply, result[0])
+		fmt.Println(supply)
 		methodName := "getLinkInfoByIndexArr"
 		input := idl.NewVec(new(idl.Nat))
 		var inputValue []interface{}
-		for i := 0; i < 1000; i++ {
+		for i := 0; i < int(supply); i++ {
 			inputValue = append(inputValue, big.NewInt(int64(i)))
 		}
 
@@ -171,16 +180,16 @@ func GetCCCNFTImageURL(canisterID string, fileType string, imageUrlTemplate stri
 		if err != nil {
 			panic(err)
 		}
-		_, result, _, err := _agent.Query(canisterID, methodName, param)
+		_, result, _, err = _agent.Query(canisterID, methodName, param)
 
 		var myResult []IPFS3ImageLink
 		utils.Decode(&myResult, result[0])
-		fmt.Println(myResult)
-		for _, token := range myResult {
-			imageUrl := fmt.Sprintf(imageUrlTemplate, token.ImageLink)
+		for i, token := range myResult {
+			//fmt.Println(token.ImageLink.Some)
+			imageUrl := fmt.Sprintf(imageUrlTemplate, token.ImageLink.Some)
 			infos = append(infos, CCCNFTInfo{
 				CanisterID:    canisterID,
-				TokenID:       token.TokenIndex,
+				TokenID:       uint64(i),
 				ImageUrl:      imageUrl,
 				ImageFileType: fileType,
 			})
@@ -201,4 +210,27 @@ func ListFiles(root string) ([]string, error) {
 	}
 
 	return result, nil
+}
+
+func GetDip721TokenMetadata(_agent *agent.Agent, canisterID string, tokenId int) (string, error) {
+	arg, _ := idl.Encode([]idl.Type{new(idl.Nat)}, []interface{}{big.NewInt(int64(tokenId))})
+	_, result, errMsg, err := _agent.Query(canisterID, "tokenMetadata", arg)
+	if err != nil || errMsg != "" {
+		return "", fmt.Errorf("can not get token metadata with ID %s: %d, error: %v, errMsg: %v\n", canisterID, tokenId, err, errMsg)
+	}
+	var myResult ManualReply_2
+	utils.Decode(&myResult, result[0])
+	if myResult.EnumIndex != "Ok" {
+		fmt.Println("result is not Ok")
+		return "", nil
+	}
+	detailMap := map[string]GenericValue{}
+	for _, v := range myResult.Ok.Properties {
+		detailMap[v.Text] = v.GenericValue
+	}
+	if url, ok := detailMap["thumbnail"]; ok {
+		return url.TextContent, nil
+	} else {
+		panic("no thumbnail")
+	}
 }

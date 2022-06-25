@@ -66,9 +66,10 @@ func GetCCCImagesURL(filePath string, dns string, autoMigrate bool) {
 			}
 			var urls []ImagesURL
 			for i, nftInfo := range singleNFTInfos {
-				//fmt.Println(nftInfo.ImageUrl)
+				//fmt.Println(nftInfo.CanisterID, nftInfo.TokenID, nftInfo.ImageUrl)
 				urls = append(urls, ImagesURL{CanisterID: nftInfo.CanisterID, TokenID: uint32(nftInfo.TokenID), Url: nftInfo.ImageUrl})
 				if len(urls) >= 500 || i == len(singleNFTInfos)-1 {
+					fmt.Println("set urls into db with length", len(urls))
 					if err := db.Save(&urls).Error; err != nil {
 						fmt.Printf("can not save images urls canister:%s,tokenid:%d,url:%s,err:%v\n", nftInfo.CanisterID, nftInfo.TokenID, nftInfo.ImageUrl, err)
 						panic(err)
@@ -82,6 +83,40 @@ func GetCCCImagesURL(filePath string, dns string, autoMigrate bool) {
 
 	fmt.Printf("successfully download ccc images\n")
 	fmt.Println(time.Now().Sub(start))
+
+}
+
+func GetDip721ImageUrl(filePath string, dns string, autoMigrate bool) {
+	_db, err := sql.Open("mysql", dns)
+	if err != nil {
+		panic(err)
+	}
+	db, err := gorm.Open(mysql.New(mysql.Config{Conn: _db}), &gorm.Config{
+		Logger: gormLogger.Default.LogMode(gormLogger.Error),
+	})
+	if err != nil {
+		panic(err)
+	}
+	if autoMigrate {
+		err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").AutoMigrate(&ImagesURL{})
+		if err != nil {
+			panic(err)
+		}
+	}
+	var infos map[string]utils.DIP721Info
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		panic(err.Error())
+	}
+	if err = json.Unmarshal(data, &infos); err != nil {
+		panic(err.Error())
+	}
+	for _, info := range infos {
+		if err = GetDIPUrlsFromIC(db, info); err != nil {
+			panic(err.Error())
+		}
+		fmt.Println("successfully get url canister", info.CanisterID)
+	}
 
 }
 

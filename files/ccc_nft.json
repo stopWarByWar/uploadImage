@@ -1,11 +1,11 @@
 {
-  "2j7u5-nyaaa-aaaah-qczma-cai":   {
-    "canister_id": "2j7u5-nyaaa-aaaah-qczma-cai",
-    "name": "Dragon Boots",
+  "o7ehd-5qaaa-aaaah-qc2zq-cai":   {
+    "canister_id": "o7ehd-5qaaa-aaaah-qc2zq-cai",
+    "name": "ICyber Skull",
     "image_url_templates": [],
-    "supply": 266,
-    "file_type": "png",
-    "type": "ipfs",
+    "supply": 2626,
+    "file_type": "jpeg",
+    "type": "ipfs-1",
     "image_url_template":"https://gateway.filedrive.io/ipfs/%s"
   }
 }

@@ -91,3 +91,25 @@ type IPFS3ImageLink struct {
 	ImageLink StringOp `ic:"0"`
 	VideoLink StringOp `ic:"1"`
 }
+
+type DIP721Info struct {
+	CanisterID string `json:"canister_id"`
+}
+
+type GenericValue struct {
+	TextContent string `ic:"TextContent"`
+	EnumIndex   string `ic:"EnumIndex"`
+}
+
+type record struct {
+	Text         string       `ic:"0"`
+	GenericValue GenericValue `ic:"1"`
+}
+type TokenMetadata struct {
+	Properties []record `ic:"properties"`
+}
+
+type ManualReply_2 struct {
+	Ok        TokenMetadata `ic:"Ok"`
+	EnumIndex string        `ic:"EnumIndex"`
+}

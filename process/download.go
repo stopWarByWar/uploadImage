@@ -3,6 +3,9 @@ package process
 import (
 	"errors"
 	"fmt"
+	agent "github.com/mix-labs/IC-Go"
+	agentUtil "github.com/mix-labs/IC-Go/utils"
+	"github.com/mix-labs/IC-Go/utils/idl"
 	"gorm.io/gorm"
 	"io/ioutil"
 	"net/http"
@@ -437,4 +440,67 @@ func GetCCCUrlsFromIC(db *gorm.DB, info utils.CCCNFTImagesInfo) error {
 		}
 	}
 	return nil
+}
+
+func GetDIPUrlsFromIC(db *gorm.DB, info utils.DIP721Info) error {
+	_agent := agent.New(true, "")
+	var urls []ImagesURL
+	var errInfo []ErrDip721Token
+	methodNameSupply := "totalSupply"
+	arg, _ := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
+	_, result, _, err := _agent.Query(info.CanisterID, methodNameSupply, arg)
+	if err != nil {
+		return err
+	}
+	var supply uint64
+	agentUtil.Decode(&supply, result[0])
+	fmt.Println(supply)
+
+	for i := 0; i < int(supply); i++ {
+		url, err := utils.GetDip721TokenMetadata(_agent, info.CanisterID, i)
+		if err != nil {
+			fmt.Println(err)
+			errInfo = append(errInfo, ErrDip721Token{info.CanisterID, i})
+		} else {
+			fmt.Println("token:", i)
+			urls = append(urls, ImagesURL{CanisterID: info.CanisterID, TokenID: uint32(i), Url: url})
+		}
+		if len(urls) > 500 || i == int(supply)-1 {
+			if err = db.Save(&urls).Error; err != nil {
+				fmt.Printf("can not save canister image urls with canister id %s error: %v\n", info.CanisterID, err)
+				return err
+			}
+			fmt.Printf("save canister %s, index %d\n", info.CanisterID, i)
+			urls = []ImagesURL{}
+		}
+	}
+	for {
+		if errInfo, err = retryDip721(_agent, db, errInfo); err != nil && len(errInfo) == 0 {
+			return nil
+		}
+	}
+}
+
+func retryDip721(_agent *agent.Agent, db *gorm.DB, errUrls []ErrDip721Token) ([]ErrDip721Token, error) {
+	var urls []ImagesURL
+	var errInfo []ErrDip721Token
+	for _, info := range errUrls {
+		url, err := utils.GetDip721TokenMetadata(_agent, info.CanisterID, info.TokenId)
+		if err != nil {
+			fmt.Println(err)
+			errInfo = append(errInfo, info)
+		} else {
+			urls = append(urls, ImagesURL{CanisterID: info.CanisterID, TokenID: uint32(info.TokenId), Url: url})
+		}
+	}
+	if err := db.Save(&urls).Error; err != nil {
+		fmt.Printf("can not save canister image urls with error: %v", err)
+		return nil, err
+	}
+	return errUrls, nil
+}
+
+type ErrDip721Token struct {
+	CanisterID string
+	TokenId    int
 }
