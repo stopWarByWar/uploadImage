@@ -493,6 +493,10 @@ func retryDip721(_agent *agent.Agent, db *gorm.DB, errUrls []ErrDip721Token) ([]
 			urls = append(urls, ImagesURL{CanisterID: info.CanisterID, TokenID: uint32(info.TokenId), Url: url})
 		}
 	}
+
+	if len(urls) == 0 {
+		return nil, nil
+	}
 	if err := db.Save(&urls).Error; err != nil {
 		fmt.Printf("can not save canister image urls with error: %v", err)
 		return nil, err
