@@ -2,6 +2,7 @@ package utils
 
 import (
 	"github.com/mix-labs/IC-Go/utils/principal"
+	"time"
 )
 
 const EntrepotNFTInfoRowLen = 8
@@ -92,8 +93,9 @@ type IPFS3ImageLink struct {
 	VideoLink StringOp `ic:"1"`
 }
 
-type DIP721Info struct {
+type BasicNFTInfo struct {
 	CanisterID string `json:"canister_id"`
+	Name       string `json:"name"`
 }
 
 type GenericValue struct {
@@ -112,4 +114,40 @@ type TokenMetadata struct {
 type ManualReply_2 struct {
 	Ok        TokenMetadata `ic:"Ok"`
 	EnumIndex string        `ic:"EnumIndex"`
+}
+
+type BlobOpt struct {
+	Some []byte `ic:"some"`
+	None uint8  `ic:"none"`
+}
+type NonFungibleType struct {
+	MetaData BlobOpt `ic:"metadata"`
+}
+type Metadata__1 struct {
+	NonFungible NonFungibleType `ic:"nonfungible"`
+	Index       string          `ic:"EnumIndex"`
+}
+type MetaData struct {
+	TokenIndex uint32      `ic:"0"`
+	MetaData   Metadata__1 `ic:"1"`
+}
+
+type YumUrl struct {
+	Thumb    string `json:"thumb"`
+	Url      string `json:"url"`
+	MimeType string `json:"mime_type"`
+}
+
+type NFTUrl struct {
+	CanisterID string `gorm:"column:canister_id;type:char(27) not null;primaryKey:token_instance,priority 1" json:"canister_id"`
+	TokenID    uint32 `gorm:"column:token_id;primaryKey:token_instance,priority 2" json:"token_id"`
+	ImageUrl   string `gorm:"column:image_url" json:"image_url"`
+	VideoUrl   string `gorm:"column:video_url" json:"video_url"`
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func (NFTUrl) TableName() string {
+	return "nft_urls"
 }

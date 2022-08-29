@@ -406,46 +406,46 @@ func GetCCCUrlsFromIC(db *gorm.DB, info utils.CCCNFTImagesInfo) error {
 	}
 
 	storageCanisterID := info.StorageCanister
-	var urls []ImagesURL
+	var urls []utils.NFTUrl
 	for _, template := range info.ImageUrlTemplates {
 		from := template.From
 		to := template.To
 
 		for i := 0; i < to-from; i++ {
-			var url string
+			var imageUrl string
 			var tokenID uint32
 			//fmt.Println(i + from)
 			switch CCC {
 			case Identifier:
 				tokenID = uint32(i + from)
 				identifier, _ := utils.TokenId2TokenIdentifier(storageCanisterID, tokenID)
-				url = fmt.Sprintf(template.ImageUrlTemplate, identifier)
+				imageUrl = fmt.Sprintf(template.ImageUrlTemplate, identifier)
 			case ID:
 				tokenID = uint32(i + from + 1)
-				url = fmt.Sprintf(template.ImageUrlTemplate, tokenID)
+				imageUrl = fmt.Sprintf(template.ImageUrlTemplate, tokenID)
 			case CCC:
 				tokenID = uint32(i + from)
-				url = fmt.Sprintf(template.ImageUrlTemplate, tokenID)
+				imageUrl = fmt.Sprintf(template.ImageUrlTemplate, tokenID)
 			}
-			//fmt.Println(url)
-			urls = append(urls, ImagesURL{CanisterID: info.CanisterID, TokenID: tokenID, Url: url})
+			//fmt.Println(imageUrl)
+			urls = append(urls, utils.NFTUrl{CanisterID: info.CanisterID, TokenID: tokenID, ImageUrl: imageUrl})
 
 			if len(urls) >= 500 || i == to-from-1 {
 				if err := db.Save(&urls).Error; err != nil {
-					fmt.Printf("can not save images urls canister:%s,tokenid:%d,url:%s,err:%v\n", info.CanisterID, tokenID, url, err)
+					fmt.Printf("can not save images urls canister:%s,tokenid:%d,imageUrl:%s,err:%v\n", info.CanisterID, tokenID, imageUrl, err)
 					return err
 				}
-				urls = []ImagesURL{}
+				urls = []utils.NFTUrl{}
 			}
 		}
 	}
 	return nil
 }
 
-func GetDIPUrlsFromIC(db *gorm.DB, info utils.DIP721Info) error {
+func GetDIPUrlsFromIC(db *gorm.DB, info utils.BasicNFTInfo) error {
 	_agent := agent.New(true, "")
-	var urls []ImagesURL
-	var errInfo []ErrDip721Token
+	var urls []utils.NFTUrl
+	var errInfo []ErrNFTToken
 	methodNameSupply := "totalSupply"
 	arg, _ := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
 	_, result, _, err := _agent.Query(info.CanisterID, methodNameSupply, arg)
@@ -457,13 +457,13 @@ func GetDIPUrlsFromIC(db *gorm.DB, info utils.DIP721Info) error {
 	fmt.Println(supply)
 
 	for i := 0; i < int(supply); i++ {
-		url, err := utils.GetDip721TokenMetadata(_agent, info.CanisterID, i)
+		imageUrl, videoUrl, err := utils.GetDip721TokenMetadata(_agent, info.CanisterID, i)
 		if err != nil {
 			fmt.Println(err)
-			errInfo = append(errInfo, ErrDip721Token{info.CanisterID, i})
+			errInfo = append(errInfo, ErrNFTToken{info.CanisterID, i})
 		} else {
 			fmt.Println("token:", i)
-			urls = append(urls, ImagesURL{CanisterID: info.CanisterID, TokenID: uint32(i), Url: url})
+			urls = append(urls, utils.NFTUrl{CanisterID: info.CanisterID, TokenID: uint32(i), ImageUrl: imageUrl, VideoUrl: videoUrl})
 		}
 		if len(urls) > 500 || i == int(supply)-1 {
 			if err = db.Save(&urls).Error; err != nil {
@@ -471,7 +471,7 @@ func GetDIPUrlsFromIC(db *gorm.DB, info utils.DIP721Info) error {
 				return err
 			}
 			fmt.Printf("save canister %s, index %d\n", info.CanisterID, i)
-			urls = []ImagesURL{}
+			urls = []utils.NFTUrl{}
 		}
 	}
 	for {
@@ -481,16 +481,16 @@ func GetDIPUrlsFromIC(db *gorm.DB, info utils.DIP721Info) error {
 	}
 }
 
-func retryDip721(_agent *agent.Agent, db *gorm.DB, errUrls []ErrDip721Token) ([]ErrDip721Token, error) {
-	var urls []ImagesURL
-	var errInfo []ErrDip721Token
+func retryDip721(_agent *agent.Agent, db *gorm.DB, errUrls []ErrNFTToken) ([]ErrNFTToken, error) {
+	var urls []utils.NFTUrl
+	var errInfo []ErrNFTToken
 	for _, info := range errUrls {
-		url, err := utils.GetDip721TokenMetadata(_agent, info.CanisterID, info.TokenId)
+		imageUrl, videoUrl, err := utils.GetDip721TokenMetadata(_agent, info.CanisterID, info.TokenId)
 		if err != nil {
 			fmt.Println(err)
 			errInfo = append(errInfo, info)
 		} else {
-			urls = append(urls, ImagesURL{CanisterID: info.CanisterID, TokenID: uint32(info.TokenId), Url: url})
+			urls = append(urls, utils.NFTUrl{CanisterID: info.CanisterID, TokenID: uint32(info.TokenId), ImageUrl: imageUrl, VideoUrl: videoUrl})
 		}
 	}
 
@@ -504,7 +504,23 @@ func retryDip721(_agent *agent.Agent, db *gorm.DB, errUrls []ErrDip721Token) ([]
 	return errUrls, nil
 }
 
-type ErrDip721Token struct {
+type ErrNFTToken struct {
 	CanisterID string
 	TokenId    int
+}
+
+func GetYumiUrlsFromIC(db *gorm.DB, canisterId string) error {
+	infos, err := utils.GetYumiNFTImageUrl(canisterId)
+	if err != nil {
+		return err
+	}
+	if len(infos) == 0 {
+		return nil
+	}
+	//fmt.Println(infos[0].Url, len(infos))
+	//for _, info := range infos {
+	//	fmt.Println(info.TokenID, info.Url)
+	//}
+	return db.Save(&infos).Error
+	//return nil
 }

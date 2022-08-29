@@ -1,4 +1,31 @@
 {
+  "hojmm-zaaaa-aaaah-qc3kq-cai":   {
+    "canister_id": "hojmm-zaaaa-aaaah-qc3kq-cai",
+    "name": "MANIFESTO",
+    "image_url_templates": [],
+    "supply": 8888,
+    "file_type": "png",
+    "type": "ipfs-4",
+    "image_url_template":"https://gateway.filedrive.io/ipfs/%s"
+  },
+  "dezoc-hyaaa-aaaah-qc3qa-cai":   {
+    "canister_id": "dezoc-hyaaa-aaaah-qc3qa-cai",
+    "name": "Diamond Hands",
+    "image_url_templates": [],
+    "supply": 2029,
+    "file_type": "jpg",
+    "type": "ipfs-3",
+    "image_url_template":"https://gateway.filedrive.io/ipfs/%s"
+  },
+  "cec6g-lyaaa-aaaah-qc4lq-cai":   {
+    "canister_id": "cec6g-lyaaa-aaaah-qc4lq-cai",
+    "name": "World Epoch",
+    "image_url_templates": [],
+    "supply": 2029,
+    "file_type": "png",
+    "type": "ipfs-1",
+    "image_url_template":"https://gateway.filedrive.io/ipfs/%s"
+  },
   "iyzne-taaaa-aaaah-qcjga-cai":   {
     "canister_id": "iyzne-taaaa-aaaah-qcjga-cai",
     "name": "Crazy Zombie",
@@ -145,7 +172,7 @@
     "image_url_templates": [],
     "supply": 3795,
     "file_type": "png",
-    "type": "ipfs",
+    "type": "ipfs-1",
     "image_url_template":""
   },
 

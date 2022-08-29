@@ -1,8 +1,12 @@
 package process
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	gormLogger "gorm.io/gorm/logger"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -252,5 +256,19 @@ func TestReRequestUrl(t *testing.T) {
 
 	_data, _ := json.Marshal(&newErrUrls)
 	filePath := fmt.Sprintf("err.json")
-	ioutil.WriteFile(filePath, _data, 0644)
+	_ = ioutil.WriteFile(filePath, _data, 0644)
+}
+
+func TestGetYumiUrlsFromIC(t *testing.T) {
+	_db, err := sql.Open("mysql", "admin:Gbs1767359487@(database-mysql-instance-1.ccggmi9astti.us-east-1.rds.amazonaws.com:3306)/db2?charset=utf8&parseTime=true")
+	if err != nil {
+		panic(err)
+	}
+	db, err := gorm.Open(mysql.New(mysql.Config{Conn: _db}), &gorm.Config{
+		Logger: gormLogger.Default.LogMode(gormLogger.Error),
+	})
+	if err != nil {
+		panic(err)
+	}
+	_ = GetYumiUrlsFromIC(db, "zicoj-2aaaa-aaaap-aaiea-cai")
 }

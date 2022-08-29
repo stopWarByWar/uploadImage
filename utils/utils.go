@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	agent "github.com/mix-labs/IC-Go"
 	"github.com/mix-labs/IC-Go/utils"
@@ -17,6 +18,7 @@ import (
 	"math/big"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func TokenId2TokenIdentifier(canisterID string, tokenID uint32) (string, error) {
@@ -103,7 +105,9 @@ func GetCCCNFTImageURL(canisterID string, fileType string, imageUrlTemplate stri
 	var infos []CCCNFTInfo
 	_agent := agent.New(true, "")
 	switch types {
+
 	case "ipfs":
+		nftUrls := make(map[uint64]CCCNFTInfo)
 		methodName := "getAllNftPhotoLink"
 		arg, _ := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
 		_, result, _, err := _agent.Query(canisterID, methodName, arg)
@@ -113,13 +117,27 @@ func GetCCCNFTImageURL(canisterID string, fileType string, imageUrlTemplate stri
 		var myResult []NFTPhotoLink
 		utils.Decode(&myResult, result[0])
 		for _, token := range myResult {
-
-			infos = append(infos, CCCNFTInfo{
+			nftUrls[token.TokenIndex] = CCCNFTInfo{
 				CanisterID:    canisterID,
 				TokenID:       token.TokenIndex,
 				ImageUrl:      token.NFTLinkInfo,
 				ImageFileType: fileType,
-			})
+			}
+		}
+		methodName = "getAllNftVideoLink"
+		arg, _ = idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
+		_, result, _, err = _agent.Query(canisterID, methodName, arg)
+		if err != nil {
+			return nil, err
+		}
+		utils.Decode(&myResult, result[0])
+		for _, token := range myResult {
+			midUrl := nftUrls[token.TokenIndex]
+			midUrl.VideoUrl = token.NFTLinkInfo
+			nftUrls[token.TokenIndex] = midUrl
+		}
+		for _, url := range nftUrls {
+			infos = append(infos, url)
 		}
 	case "ipfs-1":
 		methodName := "getAllNftLinkInfo"
@@ -142,6 +160,7 @@ func GetCCCNFTImageURL(canisterID string, fileType string, imageUrlTemplate stri
 			})
 		}
 	case "ipfs-2":
+		nftUrls := make(map[uint64]CCCNFTInfo)
 		methodName := "getAllNftPhotoLink"
 		arg, _ := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
 		_, result, _, err := _agent.Query(canisterID, methodName, arg)
@@ -150,14 +169,30 @@ func GetCCCNFTImageURL(canisterID string, fileType string, imageUrlTemplate stri
 		}
 		var myResult []NFTPhotoLink
 		utils.Decode(&myResult, result[0])
+
 		for _, token := range myResult {
 			imageUrl := fmt.Sprintf(imageUrlTemplate, token.NFTLinkInfo)
-			infos = append(infos, CCCNFTInfo{
+			nftUrls[token.TokenIndex] = CCCNFTInfo{
 				CanisterID:    canisterID,
 				TokenID:       token.TokenIndex,
 				ImageUrl:      imageUrl,
 				ImageFileType: fileType,
-			})
+			}
+		}
+		methodName = "getAllNftVideoLink"
+		arg, _ = idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
+		_, result, _, err = _agent.Query(canisterID, methodName, arg)
+		if err != nil {
+			return nil, err
+		}
+		utils.Decode(&myResult, result[0])
+		for _, token := range myResult {
+			midUrl := nftUrls[token.TokenIndex]
+			midUrl.VideoUrl = fmt.Sprintf(imageUrlTemplate, token.NFTLinkInfo)
+			nftUrls[token.TokenIndex] = midUrl
+		}
+		for _, url := range nftUrls {
+			infos = append(infos, url)
 		}
 	case "ipfs-3":
 		methodNameSupply := "getSuppy"
@@ -187,10 +222,14 @@ func GetCCCNFTImageURL(canisterID string, fileType string, imageUrlTemplate stri
 		for i, token := range myResult {
 			//fmt.Println(token.ImageLink.Some)
 			imageUrl := fmt.Sprintf(imageUrlTemplate, token.ImageLink.Some)
+			imageUrl = strings.ReplaceAll(imageUrl, "."+fileType, "")
+			videoUrl := fmt.Sprintf(imageUrlTemplate, token.VideoLink.Some)
+			videoUrl = strings.ReplaceAll(videoUrl, "."+fileType, "")
 			infos = append(infos, CCCNFTInfo{
 				CanisterID:    canisterID,
 				TokenID:       uint64(i),
 				ImageUrl:      imageUrl,
+				VideoUrl:      videoUrl,
 				ImageFileType: fileType,
 			})
 		}
@@ -198,7 +237,7 @@ func GetCCCNFTImageURL(canisterID string, fileType string, imageUrlTemplate stri
 	return infos, nil
 }
 
-func ListFiles(root string) ([]string, error) {
+func aListFiles(root string) ([]string, error) {
 	var result []string
 	files, err := ioutil.ReadDir(root)
 	if err != nil {
@@ -212,25 +251,82 @@ func ListFiles(root string) ([]string, error) {
 	return result, nil
 }
 
-func GetDip721TokenMetadata(_agent *agent.Agent, canisterID string, tokenId int) (string, error) {
+func GetDip721TokenMetadata(_agent *agent.Agent, canisterID string, tokenId int) (string, string, error) {
 	arg, _ := idl.Encode([]idl.Type{new(idl.Nat)}, []interface{}{big.NewInt(int64(tokenId))})
 	_, result, errMsg, err := _agent.Query(canisterID, "tokenMetadata", arg)
 	if err != nil || errMsg != "" {
-		return "", fmt.Errorf("can not get token metadata with ID %s: %d, error: %v, errMsg: %v\n", canisterID, tokenId, err, errMsg)
+		return "", "", fmt.Errorf("can not get token metadata with ID %s: %d, error: %v, errMsg: %v\n", canisterID, tokenId, err, errMsg)
 	}
 	var myResult ManualReply_2
 	utils.Decode(&myResult, result[0])
 	if myResult.EnumIndex != "Ok" {
 		fmt.Println("result is not Ok")
-		return "", nil
+		return "", "", nil
 	}
 	detailMap := map[string]GenericValue{}
 	for _, v := range myResult.Ok.Properties {
 		detailMap[v.Text] = v.GenericValue
 	}
+	var imageUrl string
+	var videoUrl string
 	if url, ok := detailMap["thumbnail"]; ok {
-		return url.TextContent, nil
+		imageUrl = url.TextContent
 	} else {
 		panic("no thumbnail")
 	}
+
+	if url, ok := detailMap["location"]; ok {
+		videoUrl = url.TextContent
+	} else {
+		panic("no location")
+	}
+	return imageUrl, videoUrl, nil
+}
+
+func GetYumiNFTImageUrl(canisterID string) ([]NFTUrl, error) {
+	var infos []NFTUrl
+	_agent := agent.New(true, "")
+	methodName := "getTokens"
+	arg, err := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
+	if err != nil {
+		return nil, err
+	}
+	_, result, _, err := _agent.Query(canisterID, methodName, arg)
+	if err != nil {
+		return nil, err
+	}
+	var myResult []MetaData
+	utils.Decode(&myResult, result[0])
+	for _, token := range myResult {
+		metadata := token.MetaData.NonFungible.MetaData.Some
+		if metadata == nil {
+			fmt.Printf("metadata of %s#%d is empty\n", canisterID, token.TokenIndex)
+			continue
+		}
+
+		urlInfo := new(YumUrl)
+		if err = json.Unmarshal(metadata, urlInfo); err != nil {
+			fmt.Printf("can not unmarshal url of %s#%d with error: %v", canisterID, token.TokenIndex, err)
+			continue
+		}
+
+		var videoUrl string
+
+		url := urlInfo.Url
+		if urlInfo.Thumb != "" {
+			url = urlInfo.Thumb
+		}
+
+		if urlInfo.MimeType == "video" {
+			videoUrl = urlInfo.Url
+		}
+
+		infos = append(infos, NFTUrl{
+			CanisterID: canisterID,
+			TokenID:    token.TokenIndex,
+			VideoUrl:   videoUrl,
+			ImageUrl:   url,
+		})
+	}
+	return infos, nil
 }

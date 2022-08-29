@@ -32,7 +32,7 @@ func GetCCCImagesURL(filePath string, dns string, autoMigrate bool) {
 		panic(err)
 	}
 	if autoMigrate {
-		err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").AutoMigrate(&ImagesURL{})
+		err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").AutoMigrate(&utils.NFTUrl{})
 		if err != nil {
 			panic(err)
 		}
@@ -64,17 +64,17 @@ func GetCCCImagesURL(filePath string, dns string, autoMigrate bool) {
 				fmt.Println(errMsg)
 				continue
 			}
-			var urls []ImagesURL
+			var urls []utils.NFTUrl
 			for i, nftInfo := range singleNFTInfos {
 				//fmt.Println(nftInfo.CanisterID, nftInfo.TokenID, nftInfo.ImageUrl)
-				urls = append(urls, ImagesURL{CanisterID: nftInfo.CanisterID, TokenID: uint32(nftInfo.TokenID), Url: nftInfo.ImageUrl})
+				urls = append(urls, utils.NFTUrl{CanisterID: nftInfo.CanisterID, TokenID: uint32(nftInfo.TokenID), ImageUrl: nftInfo.ImageUrl, VideoUrl: nftInfo.VideoUrl})
 				if len(urls) >= 500 || i == len(singleNFTInfos)-1 {
 					fmt.Println("set urls into db with length", len(urls))
 					if err := db.Save(&urls).Error; err != nil {
 						fmt.Printf("can not save images urls canister:%s,tokenid:%d,url:%s,err:%v\n", nftInfo.CanisterID, nftInfo.TokenID, nftInfo.ImageUrl, err)
 						panic(err)
 					}
-					urls = []ImagesURL{}
+					urls = []utils.NFTUrl{}
 				}
 			}
 		}
@@ -98,12 +98,12 @@ func GetDip721ImageUrl(filePath string, dns string, autoMigrate bool) {
 		panic(err)
 	}
 	if autoMigrate {
-		err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").AutoMigrate(&ImagesURL{})
+		err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").AutoMigrate(&utils.NFTUrl{})
 		if err != nil {
 			panic(err)
 		}
 	}
-	var infos map[string]utils.DIP721Info
+	var infos map[string]utils.BasicNFTInfo
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		panic(err.Error())
@@ -117,7 +117,41 @@ func GetDip721ImageUrl(filePath string, dns string, autoMigrate bool) {
 		}
 		fmt.Println("successfully get url canister", info.CanisterID)
 	}
+}
 
+func GetYumiImagesUrl(filePath string, dns string, autoMigrate bool) {
+	_db, err := sql.Open("mysql", dns)
+	if err != nil {
+		panic(err)
+	}
+	db, err := gorm.Open(mysql.New(mysql.Config{Conn: _db}), &gorm.Config{
+		Logger: gormLogger.Default.LogMode(gormLogger.Error),
+	})
+	if err != nil {
+		panic(err)
+	}
+	if autoMigrate {
+		err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").AutoMigrate(&utils.NFTUrl{})
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	var yumiInfos map[string]utils.BasicNFTInfo
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		panic(err.Error())
+	}
+	if err = json.Unmarshal(data, &yumiInfos); err != nil {
+		panic(err.Error())
+	}
+	for _, yumiNFT := range yumiInfos {
+		if err = GetYumiUrlsFromIC(db, yumiNFT.CanisterID); err != nil {
+			fmt.Printf("can not update yumi %s urls with error:%v\n", yumiNFT.Name, err)
+			panic(err)
+		}
+		fmt.Println("successfully get url canister:", yumiNFT.Name)
+	}
 }
 
 func DownloadImages(filePath string) {
@@ -264,17 +298,4 @@ func compassGif(path string) error {
 
 	// write new image to file
 	return gif.Encode(out, m, nil)
-}
-
-type ImagesURL struct {
-	CanisterID string `gorm:"column:canister_id;type:char(27) not null;primaryKey:token_instance,priority 1" json:"canister_id"`
-	TokenID    uint32 `gorm:"column:token_id;primaryKey:token_instance,priority 2" json:"token_id"`
-	Url        string `gorm:"column:url" json:"url"`
-
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
-func (ImagesURL) TableName() string {
-	return "nft_image_urls"
 }
