@@ -1,4 +1,40 @@
 {
+  "4pa74-jyaaa-aaaah-abqfq-cai": {
+    "canister_id": "4pa74-jyaaa-aaaah-abqfq-cai",
+    "name": "Yumi NFT Art Festival Badge Ⅶ"
+  },
+  "3hzxy-fyaaa-aaaap-aaiiq-cai": {
+    "canister_id": "3hzxy-fyaaa-aaaap-aaiiq-cai",
+    "name": "Martian"
+  },
+  "5lnqo-qyaaa-aaaah-abqdq-cai": {
+    "canister_id": "5lnqo-qyaaa-aaaah-abqdq-cai",
+    "name": "Yumi NFT Art Festival Badge V"
+  },
+  "q6ods-tiaaa-aaaap-aajxq-cai": {
+    "canister_id": "q6ods-tiaaa-aaaap-aajxq-cai",
+    "name": "Motomoji-MessiahFriends"
+  },
+  "ut7hi-aiaaa-aaaap-aajnq-cai": {
+    "canister_id": "ut7hi-aiaaa-aaaap-aajnq-cai",
+    "name": "Serval Spy"
+  },
+  "ff3uc-miaaa-aaaap-aakfq-cai": {
+    "canister_id": "ff3uc-miaaa-aaaap-aakfq-cai",
+    "name": "IC Course"
+  },
+  "fx5d3-ayaaa-aaaap-aakgq-cai": {
+    "canister_id": "fx5d3-ayaaa-aaaap-aakgq-cai",
+    "name": "TPUNKS"
+  },
+  "4ibzi-eaaaa-aaaah-abqfa-cai": {
+    "canister_id": "4ibzi-eaaaa-aaaah-abqfa-cai",
+    "name": "Yumi NFT Art Festival Badge Ⅵ"
+  },
+  "qqmo2-iyaaa-aaaap-aajwq-cai": {
+    "canister_id": "qqmo2-iyaaa-aaaap-aajwq-cai",
+    "name": "FACELESS"
+  },
   "6hgxm-zqaaa-aaaap-aaiva-cai": {
     "canister_id": "6hgxm-zqaaa-aaaap-aaiva-cai",
     "name": "Worlds Beyond \"Reality\""
@@ -59,10 +95,6 @@
     "canister_id": "xarx3-ayaaa-aaaah-abjbq-cai",
     "name": "Girls"
   },
-  "zydwz-laaaa-aaaam-qasuq-cai": {
-    "canister_id": "zydwz-laaaa-aaaam-qasuq-cai",
-    "name": "Celestials"
-  },
   "zicoj-2aaaa-aaaap-aaiea-cai": {
     "canister_id": "zicoj-2aaaa-aaaap-aaiea-cai",
     "name": "OBJCT"
@@ -98,5 +130,29 @@
   "vupsp-fyaaa-aaaah-abjpq-cai": {
     "canister_id": "vupsp-fyaaa-aaaah-abjpq-cai",
     "name": "Nauts CC"
+  },
+  "gappj-raaaa-aaaap-aakoa-cai": {
+    "canister_id": "gappj-raaaa-aaaap-aakoa-cai",
+    "name": "BTC Skulls"
+  },
+  "goncb-kqaaa-aaaap-aakpa-cai": {
+    "canister_id": "goncb-kqaaa-aaaap-aakpa-cai",
+    "name": "ICLighthouse Planet Cards"
+  },
+  "swu4x-biaaa-aaaap-aaj3q-cai": {
+    "canister_id": "swu4x-biaaa-aaaap-aaj3q-cai",
+    "name": "ANOMALY"
+  },
+  "daqp5-niaaa-aaaap-aaktq-cai": {
+    "canister_id": "daqp5-niaaa-aaaap-aaktq-cai",
+    "name": "ICPlat 1.0"
+  },
+  "afeuw-qaaaa-aaaap-aakya-cai": {
+    "canister_id": "afeuw-qaaaa-aaaap-aakya-cai",
+    "name": "Revelation Walls"
+  },
+  "algz6-lqaaa-aaaap-aakza-cai": {
+    "canister_id": "algz6-lqaaa-aaaap-aakza-cai",
+    "name": "Royal Ape"
   }
 }

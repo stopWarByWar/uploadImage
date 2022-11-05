@@ -1,0 +1,44 @@
+{
+  "fc5yf-vqaaa-aaaam-qa42q-cai": {
+    "canister_id": "fc5yf-vqaaa-aaaam-qa42q-cai",
+    "name": "Goated Gamer DAO",
+    "supply": 5000,
+    "type": "image"
+  },
+  "oapqk-zyaaa-aaaam-qa5ha-cai": {
+    "canister_id": "oapqk-zyaaa-aaaam-qa5ha-cai",
+    "name": "LuMari II: Throwback",
+    "supply": 1000,
+    "type": "image"
+  },
+  "p4q27-cyaaa-aaaam-qa26q-cai": {
+    "canister_id": "p4q27-cyaaa-aaaam-qa26q-cai",
+    "name": "Caffesitas",
+    "supply": 5000,
+    "type": "image"
+  },
+  "pkasq-3iaaa-aaaam-qa5aa-cai": {
+    "canister_id": "pkasq-3iaaa-aaaam-qa5aa-cai",
+    "name": "Triana Divine",
+    "supply": 10000,
+    "type": "image"
+  },
+  "juovk-aqaaa-aaaam-qa5uq-cai": {
+    "canister_id": "juovk-aqaaa-aaaam-qa5uq-cai",
+    "name": "Cryptopengz",
+    "supply": 2022,
+    "type": "image"
+  },
+  "ce2k4-aiaaa-aaaam-qa4ka-cai": {
+    "canister_id": "ce2k4-aiaaa-aaaam-qa4ka-cai",
+    "name": "PAW Collection",
+    "supply": 10000,
+    "type": "image"
+  },
+  "ljt3c-tyaaa-aaaam-qa53a-cai": {
+    "canister_id": "ljt3c-tyaaa-aaaam-qa53a-cai",
+    "name": "IC Octoverse Phase-1",
+    "supply": 2525,
+    "type": "image"
+  }
+}

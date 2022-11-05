@@ -1,0 +1,308 @@
+{
+  "jh76l-5iaaa-aaaam-qawgq-cai": {
+    "canister_id": "jh76l-5iaaa-aaaam-qawgq-cai",
+    "name": "The Digmonds",
+    "supply": 10,
+    "type": "video"
+  },
+  "l2cqd-oaaaa-aaaam-qawja-cai": {
+    "canister_id": "l2cqd-oaaaa-aaaam-qawja-cai",
+    "name": "ICPlatypus",
+    "supply": 3099,
+    "type": "image"
+  },
+  "nwkaa-ziaaa-aaaam-qaw6q-cai": {
+    "canister_id": "nwkaa-ziaaa-aaaam-qaw6q-cai",
+    "name": "Aplomb",
+    "supply": 250,
+    "type": "image"
+  },
+  "hqvh5-maaaa-aaaam-qaxfa-cai": {
+    "canister_id": "hqvh5-maaaa-aaaam-qaxfa-cai",
+    "name": "IC Calida",
+    "supply": 650,
+    "type": "image"
+  },
+  "ndnrn-yaaaa-aaaam-qaw5a-cai": {
+    "canister_id": "ndnrn-yaaaa-aaaam-qaw5a-cai",
+    "name": "CryptoSe7ens",
+    "supply": 343,
+    "type": "image"
+  },
+  "hfswq-niaaa-aaaam-qaxgq-cai": {
+    "canister_id": "hfswq-niaaa-aaaam-qaxgq-cai",
+    "name": "Champs Creed",
+    "supply": 200,
+    "type": "image"
+  },
+  "arttq-uaaaa-aaaam-qaxva-cai": {
+    "canister_id": "arttq-uaaaa-aaaam-qaxva-cai",
+    "name": "Life in the Cosmos",
+    "supply": 30,
+    "type": "image"
+  },
+  "v2awd-oaaaa-aaaam-qayia-cai": {
+    "canister_id": "v2awd-oaaaa-aaaam-qayia-cai",
+    "name": "Tales of the Creeps",
+    "supply": 222,
+    "type": "image"
+  },
+  "cxlb5-5qaaa-aaaam-qaxya-cai": {
+    "canister_id": "cxlb5-5qaaa-aaaam-qaxya-cai",
+    "name": "WAGMI Dystopian Club",
+    "supply": 8888,
+    "type": "image"
+  },
+  "shcy7-baaaa-aaaam-qay2a-cai": {
+    "canister_id": "shcy7-baaaa-aaaam-qay2a-cai",
+    "name": "The Mask",
+    "supply": 108,
+    "type": "image"
+  },
+  "rxrsz-5aaaa-aaaam-qaysa-cai": {
+    "canister_id": "rxrsz-5aaaa-aaaam-qaysa-cai",
+    "name": "Orblings",
+    "supply": 3000,
+    "type": "video"
+  },
+  "eagn3-qaaaa-aaaam-qaxna-cai": {
+    "canister_id": "eagn3-qaaaa-aaaam-qaxna-cai",
+    "name": "ISWL",
+    "supply": 10000,
+    "type": "image"
+  },
+  "24ark-haaaa-aaaam-qazoa-cai": {
+    "canister_id": "24ark-haaaa-aaaam-qazoa-cai",
+    "name": "Crypto Wizards",
+    "supply": 69,
+    "type": "image"
+  },
+  "6wqte-zyaaa-aaaam-qazuq-cai": {
+    "canister_id": "6wqte-zyaaa-aaaam-qazuq-cai",
+    "name": "3DCC",
+    "supply": 108,
+    "type": "video"
+  },
+  "kojns-saaaa-aaaam-qa2aa-cai": {
+    "canister_id": "kojns-saaaa-aaaam-qa2aa-cai",
+    "name": "JEWELS",
+    "supply": 888,
+    "type": "image"
+  },
+  "5pas6-tqaaa-aaaam-qaz5a-cai": {
+    "canister_id": "5pas6-tqaaa-aaaam-qaz5a-cai",
+    "name": "IC Art Toys",
+    "supply": 0,
+    "type": "image"
+  },
+  "4mm3y-hiaaa-aaaam-qaz3q-cai": {
+    "canister_id": "4mm3y-hiaaa-aaaam-qaz3q-cai",
+    "name": "Astro Samurai",
+    "supply": 72,
+    "type": "image"
+  },
+  "2vd2w-riaaa-aaaam-qazpq-cai": {
+    "canister_id": "2vd2w-riaaa-aaaam-qazpq-cai",
+    "name": "⭐CoinStarsNFT",
+    "supply": 222,
+    "type": "image"
+  },
+  "z6vmv-xqaaa-aaaam-qazfa-cai": {
+    "canister_id": "z6vmv-xqaaa-aaaam-qazfa-cai",
+    "name": "My Monsters",
+    "supply": 150,
+    "type": "image"
+  },
+  "sobtd-xiaaa-aaaam-qay3q-cai": {
+    "canister_id": "sobtd-xiaaa-aaaam-qay3q-cai",
+    "name": "Humans: Dystopia",
+    "supply": 4000,
+    "type": "image"
+  },
+  "3rove-iiaaa-aaaam-qazjq-cai": {
+    "canister_id": "3rove-iiaaa-aaaam-qazjq-cai",
+    "name": "MiMons",
+    "supply": 222,
+    "type": "image"
+  },
+  "52hdt-syaaa-aaaam-qaz6q-cai": {
+    "canister_id": "52hdt-syaaa-aaaam-qaz6q-cai",
+    "name": "IC Precious",
+    "supply": 61,
+    "type": "image"
+  },
+  "736xk-wqaaa-aaaam-qazta-cai": {
+    "canister_id": "736xk-wqaaa-aaaam-qazta-cai",
+    "name": "STRUCTURE",
+    "supply": 110,
+    "type": "image"
+  },
+  "k4p2l-6qaaa-aaaam-qa2da-cai": {
+    "canister_id": "k4p2l-6qaaa-aaaam-qa2da-cai",
+    "name": "KawaiiVHS",
+    "supply": 500,
+    "type": "image"
+  },
+  "mfa3f-iqaaa-aaaam-qa2xa-cai": {
+    "canister_id": "mfa3f-iqaaa-aaaam-qa2xa-cai",
+    "name": "Myour",
+    "supply": 169,
+    "type": "image"
+  },
+  "i2xig-xaaaa-aaaam-qa2oa-cai": {
+    "canister_id": "i2xig-xaaaa-aaaam-qa2oa-cai",
+    "name": "Boys On IC",
+    "supply": 300,
+    "type": "image"
+  },
+  "m6fha-siaaa-aaaam-qa2vq-cai": {
+    "canister_id": "m6fha-siaaa-aaaam-qa2vq-cai",
+    "name": "Clouds of man",
+    "supply": 40,
+    "type": "image"
+  },
+  "itud2-biaaa-aaaam-qa2pq-cai": {
+    "canister_id": "itud2-biaaa-aaaam-qa2pq-cai",
+    "name": "Cosmo-Gem",
+    "supply": 100,
+    "type": "image"
+  },
+  "whlbl-baaaa-aaaah-abo2q-cai": {
+    "canister_id": "whlbl-baaaa-aaaah-abo2q-cai",
+    "name": "ICWave",
+    "supply": 3200,
+    "type": "image"
+  },
+  "g73gj-kyaaa-aaaam-qa3oq-cai": {
+    "canister_id": "g73gj-kyaaa-aaaam-qa3oq-cai",
+    "name": "BIOMORPH",
+    "supply": 100,
+    "type": "image"
+  },
+  "o3kmp-daaaa-aaaam-qa5fq-cai": {
+    "canister_id": "o3kmp-daaaa-aaaam-qa5fq-cai",
+    "name": "CYB",
+    "supply": 204,
+    "type": "image"
+  },
+  "c77wz-2qaaa-aaaam-qa4iq-cai": {
+    "canister_id": "c77wz-2qaaa-aaaam-qa4iq-cai",
+    "name": "MartianVHS",
+    "supply": 100,
+    "type": "image"
+  },
+  "oy5vn-3yaaa-aaaam-qa2yq-cai": {
+    "canister_id": "oy5vn-3yaaa-aaaam-qa2yq-cai",
+    "name": "IC FLOWERS",
+    "supply": 0,
+    "type": "image"
+  },
+  "nlzgj-7aaaa-aaaam-qa5nq-cai": {
+    "canister_id": "nlzgj-7aaaa-aaaam-qa5nq-cai",
+    "name": "MUMMY",
+    "supply": 10,
+    "type": "image"
+  },
+  "attwk-5qaaa-aaaam-qa3za-cai": {
+    "canister_id": "attwk-5qaaa-aaaam-qa3za-cai",
+    "name": "HELLION",
+    "supply": 223,
+    "type": "image"
+  },
+  "bm3f5-6iaaa-aaaam-qa35q-cai": {
+    "canister_id": "bm3f5-6iaaa-aaaam-qa35q-cai",
+    "name": "Orblings Emblem",
+    "supply": 0,
+    "type": "video"
+  },
+  "aguhh-4yaaa-aaaam-qa32q-cai": {
+    "canister_id": "aguhh-4yaaa-aaaam-qa32q-cai",
+    "name": "Tyrant Turtles",
+    "supply": 100,
+    "type": "image"
+  },
+  "albtn-7qaaa-aaaam-qa4gq-cai": {
+    "canister_id": "albtn-7qaaa-aaaam-qa4gq-cai",
+    "name": "Duo ICells",
+    "supply": 88,
+    "type": "image"
+  },
+  "fpimp-wyaaa-aaaam-qa3gq-cai": {
+    "canister_id": "fpimp-wyaaa-aaaam-qa3gq-cai",
+    "name": "Cosmic Tacos",
+    "supply": 1000,
+    "type": "image"
+  },
+  "ghjdo-iyaaa-aaaam-qa4ra-cai": {
+    "canister_id": "ghjdo-iyaaa-aaaam-qa4ra-cai",
+    "name": "Abikes",
+    "supply": 999,
+    "type": "image"
+  },
+  "bfyob-iaaaa-aaaam-qa34a-cai": {
+  "canister_id": "bfyob-iaaaa-aaaam-qa34a-cai",
+  "name": "Colorful Abstracts",
+  "supply": 50,
+  "type": "image"
+},
+  "gk4xe-lqaaa-aaaam-qa3na-cai": {
+    "canister_id": "gk4xe-lqaaa-aaaam-qa3na-cai",
+    "name": "MechaFailed",
+    "supply": 50,
+    "type": "image"
+  },
+  "e2ung-3qaaa-aaaam-qa46q-cai": {
+    "canister_id": "e2ung-3qaaa-aaaam-qa46q-cai",
+    "name": "A-Crystal",
+    "supply": 300,
+    "type": "image"
+  },
+  "hjq6c-7iaaa-aaaam-qa3lq-cai": {
+    "canister_id": "hjq6c-7iaaa-aaaam-qa3lq-cai",
+    "name": "Astro Samurai -Anime",
+    "supply": 50,
+    "type": "image"
+  },
+  "jgict-maaaa-aaaam-qa5xq-cai": {
+    "canister_id": "jgict-maaaa-aaaam-qa5xq-cai",
+    "name": "Margon ∞",
+    "supply": 333,
+    "type": "image"
+  },
+  "deb2y-miaaa-aaaam-qa3rq-cai": {
+    "canister_id": "deb2y-miaaa-aaaam-qa3rq-cai",
+    "name": "Crown Membership",
+    "supply": 2000,
+    "type": "video"
+  },
+  "hybqz-laaaa-aaaam-qa4vq-cai": {
+    "canister_id": "hybqz-laaaa-aaaam-qa4vq-cai",
+    "name": "Li◭gt",
+    "supply": 38,
+    "type": "image"
+  },
+  "nc2nv-jiaaa-aaaam-qa5ma-cai": {
+    "canister_id": "nc2nv-jiaaa-aaaam-qa5ma-cai",
+    "name": "SKULLs",
+    "supply": 222,
+    "type": "image"
+  },
+  "buja2-4iaaa-aaaam-qa4ca-cai": {
+    "canister_id": "buja2-4iaaa-aaaam-qa4ca-cai",
+    "name": "iistronauts",
+    "supply": 775,
+    "type": "image"
+  },
+  "odyji-baaaa-aaaam-qa22a-cai": {
+    "canister_id": "odyji-baaaa-aaaam-qa22a-cai",
+    "name": "Robot Scientists",
+    "supply": 30,
+    "type": "image"
+  },
+  "a6gca-6yaaa-aaaam-qa4fa-cai": {
+    "canister_id": "a6gca-6yaaa-aaaam-qa4fa-cai",
+    "name": "Pattern Surface NFT",
+    "supply": 555,
+    "type": "image"
+  }
+}

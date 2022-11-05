@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	agent "github.com/mix-labs/IC-Go"
 	"github.com/nfnt/resize"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -119,6 +120,39 @@ func GetDip721ImageUrl(filePath string, dns string, autoMigrate bool) {
 	}
 }
 
+func SetICPSwapImageUrl(filePath string, dns string, autoMigrate bool) {
+	_db, err := sql.Open("mysql", dns)
+	if err != nil {
+		panic(err)
+	}
+	db, err := gorm.Open(mysql.New(mysql.Config{Conn: _db}), &gorm.Config{
+		Logger: gormLogger.Default.LogMode(gormLogger.Error),
+	})
+	if err != nil {
+		panic(err)
+	}
+	if autoMigrate {
+		err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").AutoMigrate(&utils.NFTUrl{})
+		if err != nil {
+			panic(err)
+		}
+	}
+	_agent := agent.New(true, "")
+
+	var infos map[string]utils.BasicNFTInfo
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		panic(err.Error())
+	}
+	if err = json.Unmarshal(data, &infos); err != nil {
+		panic(err.Error())
+	}
+	for _, info := range infos {
+		utils.SetICPSwapUrls(db, _agent, info.CanisterID)
+		fmt.Println("successfully get url canister", info.CanisterID)
+	}
+}
+
 func GetYumiImagesUrl(filePath string, dns string, autoMigrate bool) {
 	_db, err := sql.Open("mysql", dns)
 	if err != nil {
@@ -151,6 +185,96 @@ func GetYumiImagesUrl(filePath string, dns string, autoMigrate bool) {
 			panic(err)
 		}
 		fmt.Println("successfully get url canister:", yumiNFT.Name)
+	}
+}
+
+func GetAstroXImagesUrl(filePath string, dns string, autoMigrate bool) {
+	_db, err := sql.Open("mysql", dns)
+	if err != nil {
+		panic(err)
+	}
+	db, err := gorm.Open(mysql.New(mysql.Config{Conn: _db}), &gorm.Config{
+		Logger: gormLogger.Default.LogMode(gormLogger.Error),
+	})
+	if err != nil {
+		panic(err)
+	}
+	if autoMigrate {
+		err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").AutoMigrate(&utils.NFTUrl{})
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	var yumiInfos map[string]utils.BasicNFTInfo
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		panic(err.Error())
+	}
+	if err = json.Unmarshal(data, &yumiInfos); err != nil {
+		panic(err.Error())
+	}
+	for _, yumiNFT := range yumiInfos {
+		if err = GetAstroXUrlsFromIC(db, yumiNFT.CanisterID); err != nil {
+			fmt.Printf("can not update yumi %s urls with error:%v\n", yumiNFT.Name, err)
+			panic(err)
+		}
+		fmt.Println("successfully get url canister:", yumiNFT.Name)
+	}
+}
+
+func GetEntrepotsUrls(filePath string, dns string, autoMigrate bool) {
+	template := "https://%s.raw.ic0.app/?type=thumbnail&tokenid=%s"
+	_db, err := sql.Open("mysql", dns)
+	if err != nil {
+		panic(err)
+	}
+	db, err := gorm.Open(mysql.New(mysql.Config{Conn: _db}), &gorm.Config{
+		Logger: gormLogger.Default.LogMode(gormLogger.Error),
+	})
+	if err != nil {
+		panic(err)
+	}
+	if autoMigrate {
+		err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").AutoMigrate(&utils.NFTUrl{})
+		if err != nil {
+			panic(err)
+		}
+	}
+	c := new(http.Client)
+	var nftInfos map[string]utils.BasicEntrepotImageInfo
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		panic(err.Error())
+	}
+	if err = json.Unmarshal(data, &nftInfos); err != nil {
+		panic(err.Error())
+	}
+	for _, nft := range nftInfos {
+		GetEntrepotUrls(db, c, nft.CanisterId, nft.Supply, nft.Type)
+		var nftInfos []*utils.NFTUrl
+		if err = db.Where("canister_id IN (?)", nft.CanisterId).Find(&nftInfos).Error; err != nil {
+			panic(err)
+			return
+		}
+		for _, url := range nftInfos {
+			identity, err := utils.TokenId2TokenIdentifier(url.CanisterID, url.TokenID)
+			if err != nil {
+				panic(err)
+				return
+			}
+			if url.ImageUrl == "" {
+				url.ImageUrl = fmt.Sprintf(template, nft.CanisterId, identity)
+			}
+		}
+		if len(nftInfos) == 0 {
+			fmt.Printf("successfully get url canister:%s,amount:%d\n", nft.Name, len(nftInfos))
+			continue
+		}
+		if err := db.Save(&nftInfos).Error; err != nil {
+			panic(err)
+		}
+		fmt.Printf("successfully get url canister:%s,amount:%d\n", nft.Name, len(nftInfos))
 	}
 }
 

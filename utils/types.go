@@ -151,3 +151,36 @@ type NFTUrl struct {
 func (NFTUrl) TableName() string {
 	return "nft_urls"
 }
+
+type BasicEntrepotImageInfo struct {
+	Name       string `json:"name"`
+	CanisterId string `json:"canister_id"`
+	Supply     int    `json:"supply"`
+	Type       string `json:"type"`
+}
+
+//
+//type VecNat8Opt struct {
+//	Some []uint8 `ic:"some"`
+//	None uint8   `ic:"none"`
+//}
+//type Fungible struct {
+//	Decimals uint8      `ic:"decimals"`
+//	Metadata VecNat8Opt `ic:"metadata"`
+//	Name     string     `ic:"name"`
+//	Symbol   string     `ic:"symbol"`
+//}
+//
+//type Nonfungible struct {
+//	Metadata VecNat8Opt `ic:"metadata"`
+//}
+//type Metadata struct {
+//	Fungible    Fungible    `ic:"fungible"`
+//	Nonfungible Nonfungible `ic:"nonfungible"`
+//	Index       string      `ic:"EnumIndex"`
+//}
+//
+//type result_2 struct {
+//	Ok    Metadata `ic:"Ok"`
+//	Index string   `ic:"EnumIndex"`
+//}

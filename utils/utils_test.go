@@ -1,17 +1,23 @@
 package utils
 
 import (
+	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	mapSet "github.com/deckarep/golang-set"
 	agent "github.com/mix-labs/IC-Go"
 	"github.com/mix-labs/IC-Go/utils"
 	"github.com/mix-labs/IC-Go/utils/idl"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	gormLogger "gorm.io/gorm/logger"
 	"io/ioutil"
+	"net/http"
 	"testing"
 )
 
 func TestID(t *testing.T) {
-	identifier, _ := TokenId2TokenIdentifier("5movr-diaaa-aaaak-aaftq-cai", 0)
+	identifier, _ := TokenId2TokenIdentifier("3sxmo-naaaa-aaaao-aakqa-cai", 12)
 	t.Log(identifier)
 }
 
@@ -65,4 +71,51 @@ func TestListFiles(t *testing.T) {
 	var supply uint64
 	utils.Decode(&supply, result[0])
 	t.Log(supply)
+}
+
+func Test_getEntrepotUrl(t *testing.T) {
+	t.Log(getEntrepotUrl(new(http.Client), "ljt3c-tyaaa-aaaam-qa53a-cai", 3036))
+}
+
+func Test_SetICPSwapUrls(t *testing.T) {
+	dns := "admin:Gbs1767359487@(database-mysql-instance-1.ccggmi9astti.us-east-1.rds.amazonaws.com:3306)/db2?charset=utf8&parseTime=true"
+	_db, err := sql.Open("mysql", dns)
+	if err != nil {
+		panic(err)
+	}
+	db, err := gorm.Open(mysql.New(mysql.Config{Conn: _db}), &gorm.Config{
+		Logger: gormLogger.Default.LogMode(gormLogger.Error),
+	})
+	if err != nil {
+		panic(err)
+	}
+	_agent := agent.New(true, "")
+
+	SetICPSwapUrls(db, _agent, "ewuhj-dqaaa-aaaag-qahgq-cai")
+}
+func TestGetTokens(t *testing.T) {
+	_agent := agent.New(true, "")
+	canisterID := "wettq-dqaaa-aaaag-qapua-cai"
+	tokens, err := getTokens(_agent, canisterID)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+	t.Log(tokens, len(tokens))
+}
+
+func TestName(t *testing.T) {
+	t.Log(hex.EncodeToString([]byte("Monstea's")))
+	//r, _ := hex.DecodeString("6170746f735f636f696e")
+	//t.Log(string(r))
+}
+
+func Test_GetIcsMetadata(t *testing.T) {
+	_agent := agent.New(true, "")
+	canisterID := "wettq-dqaaa-aaaag-qapua-cai"
+	t.Log(GetIcsMetadata(_agent, canisterID, 22))
+}
+
+func TestGetEXTMetaData(t *testing.T) {
+
 }

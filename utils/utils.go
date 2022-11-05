@@ -4,22 +4,29 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
 	agent "github.com/mix-labs/IC-Go"
 	"github.com/mix-labs/IC-Go/utils"
 	"github.com/mix-labs/IC-Go/utils/idl"
 	"github.com/mix-labs/IC-Go/utils/principal"
 	"github.com/xuri/excelize/v2"
+	"gorm.io/gorm"
 	"image"
 	"image/color"
 	"image/draw"
 	"image/jpeg"
 	"io/ioutil"
 	"math/big"
-	"os"
+	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 )
+
+const goroutineNum = 100
+
+//const goroutineNum = 3000000000
 
 func TokenId2TokenIdentifier(canisterID string, tokenID uint32) (string, error) {
 	var tokenIdentifier string
@@ -71,16 +78,16 @@ func GetEXTNFTImageInfos(path string) (map[string]EXTNFTImageInfo, error) {
 	return nftInfos, nil
 }
 
-func PathExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
-}
+//func PathExists(path string) (bool, error) {
+//	_, err := os.Stat(path)
+//	if err == nil {
+//		return true, nil
+//	}
+//	if os.IsNotExist(err) {
+//		return false, nil
+//	}
+//	return false, err
+//}
 
 func CompressImageResource(data []byte) []byte {
 	imgSrc, _, err := image.Decode(bytes.NewReader(data))
@@ -237,19 +244,19 @@ func GetCCCNFTImageURL(canisterID string, fileType string, imageUrlTemplate stri
 	return infos, nil
 }
 
-func aListFiles(root string) ([]string, error) {
-	var result []string
-	files, err := ioutil.ReadDir(root)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, file := range files {
-		result = append(result, file.Name())
-	}
-
-	return result, nil
-}
+//func aListFiles(root string) ([]string, error) {
+//	var result []string
+//	files, err := ioutil.ReadDir(root)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	for _, file := range files {
+//		result = append(result, file.Name())
+//	}
+//
+//	return result, nil
+//}
 
 func GetDip721TokenMetadata(_agent *agent.Agent, canisterID string, tokenId int) (string, string, error) {
 	arg, _ := idl.Encode([]idl.Type{new(idl.Nat)}, []interface{}{big.NewInt(int64(tokenId))})
@@ -292,7 +299,11 @@ func GetYumiNFTImageUrl(canisterID string) ([]NFTUrl, error) {
 		return nil, err
 	}
 	_, result, _, err := _agent.Query(canisterID, methodName, arg)
+	if err != nil && err.Error() == "() empty" {
+		return nil, nil
+	}
 	if err != nil {
+		fmt.Println(err.Error())
 		return nil, err
 	}
 	var myResult []MetaData
@@ -300,7 +311,7 @@ func GetYumiNFTImageUrl(canisterID string) ([]NFTUrl, error) {
 	for _, token := range myResult {
 		metadata := token.MetaData.NonFungible.MetaData.Some
 		if metadata == nil {
-			fmt.Printf("metadata of %s#%d is empty\n", canisterID, token.TokenIndex)
+			//fmt.Printf("metadata of %s#%d is empty\n", canisterID, token.TokenIndex)
 			continue
 		}
 
@@ -327,6 +338,318 @@ func GetYumiNFTImageUrl(canisterID string) ([]NFTUrl, error) {
 			VideoUrl:   videoUrl,
 			ImageUrl:   url,
 		})
+		fmt.Println(videoUrl, url)
+	}
+	return infos, nil
+}
+
+func SetICPSwapUrls(db *gorm.DB, _agent *agent.Agent, canisterID string) {
+	tokenIds, err := getTokens(_agent, canisterID)
+	if err != nil {
+		panic(err)
+	}
+
+	//var idSet = mapset.NewSet()
+	//for _, id := range tokenIds {
+	//	idSet.Add(id.TokenIndex)
+	//}
+	//fmt.Println(len(tokenIds), idSet.Cardinality())
+
+	singleGoroutineItemNum := len(tokenIds) / goroutineNum
+	if singleGoroutineItemNum < 3 {
+		setICPSwapUrls(db, _agent, canisterID, tokenIds)
+		return
+	}
+
+	var wg sync.WaitGroup
+	for i := 0; i < goroutineNum; i++ {
+		wg.Add(1)
+		if i != goroutineNum-1 {
+			go func(i int) {
+				setICPSwapUrls(db, _agent, canisterID, tokenIds[i*singleGoroutineItemNum:(i+1)*singleGoroutineItemNum])
+				defer wg.Done()
+			}(i)
+		} else {
+			go func(i int) {
+				setICPSwapUrls(db, _agent, canisterID, tokenIds[i*singleGoroutineItemNum:])
+				defer wg.Done()
+			}(i)
+		}
+	}
+	wg.Wait()
+}
+
+//type blobOpt struct {
+//	Some []uint8 `ic:"some"`
+//	None uint8   `ic:"none"`
+//}
+
+//type fungible struct {
+//	Decimals     uint8   `ic:"decimals"`
+//	Metadata     blobOpt `ic:"metadata"`
+//	Name         string  `ic:"name"`
+//	OwnerAccount string  `ic:"ownerAccount"`
+//	Symbol       string  `ic:"symbol"`
+//}
+
+type tokens struct {
+	TokenIndex uint32 `ic:"0"`
+}
+
+type IcsMetadata struct {
+	FilePath string `ic:"filePath"`
+	FileType string `ic:"fileType"`
+	Link     string `ic:"link"`
+}
+
+type ResponseResult struct {
+	Err   string      `ic:"err"`
+	Ok    IcsMetadata `ic:"ok"`
+	Index string      `ic:"EnumIndex"`
+}
+
+func setICPSwapUrls(db *gorm.DB, _agent *agent.Agent, canisterID string, tokens []tokens) {
+	if len(tokens) == 0 {
+		return
+	}
+	var urls []*NFTUrl
+	for _, token := range tokens {
+		url, err := GetIcsMetadata(_agent, canisterID, token.TokenIndex)
+		if err != nil {
+			fmt.Printf("\u001B %s:%d can not get metaData with error:%v\n", canisterID, token.TokenIndex, err)
+			continue
+		}
+		urls = append(urls, url)
+		fmt.Printf("canister:%s,id:%d,videoUrl:%s,imageUrl:%s\n", canisterID, token.TokenIndex, url.VideoUrl, url.ImageUrl)
+	}
+	if err := db.Save(&urls).Error; err != nil {
+		fmt.Printf("\u001B %s can not set urls into db with error:%v\n", canisterID, err)
+	}
+}
+
+func getTokens(_agent *agent.Agent, canisterID string) ([]tokens, error) {
+	methodName := "getTokens"
+	arg, _ := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
+
+	_, result, _, err := _agent.Query(canisterID, methodName, arg)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var myResult []tokens
+	utils.Decode(&myResult, result[0])
+	return myResult, nil
+}
+
+func GetIcsMetadata(_agent *agent.Agent, canisterID string, id uint32) (*NFTUrl, error) {
+	methodName := "icsMetadata"
+	arg, _ := idl.Encode([]idl.Type{idl.Nat32()}, []interface{}{big.NewInt(int64(id))})
+	_, result, _, err := _agent.Query(canisterID, methodName, arg)
+	if err != nil {
+		return nil, err
+	}
+
+	var myResult ResponseResult
+	utils.Decode(&myResult, result[0])
+	if myResult.Err != "" {
+		return nil, fmt.Errorf(myResult.Err)
+	}
+	switch myResult.Ok.FileType {
+	case "image":
+		return &NFTUrl{
+			CanisterID: canisterID,
+			TokenID:    id,
+			ImageUrl:   myResult.Ok.FilePath,
+		}, nil
+	default:
+		return &NFTUrl{
+			CanisterID: canisterID,
+			TokenID:    id,
+			VideoUrl:   myResult.Ok.FilePath,
+		}, nil
+	}
+}
+
+func GetEntrepotUrls(db *gorm.DB, c *http.Client, canisterId string, from, to int, types string) {
+	var urls []NFTUrl
+	for i := from; i < to; i++ {
+		url, err := getEntrepotUrl(c, canisterId, i)
+		if err != nil {
+			fmt.Printf("%s:%d can not get url with error:%v\n", canisterId, i, err)
+			//if len(urls) == 0 {
+			//	return
+			//} else if err := db.Save(&urls).Error; err != nil {
+			//	fmt.Printf("%s can not set urls into db with error:%v\n", canisterId, err)
+			//}
+			//panic(err)
+		} else {
+			//fmt.Printf("%s:%d urls:%s\n", canisterId, i, url)
+			switch types {
+			case "image":
+				urls = append(urls, NFTUrl{
+					CanisterID: canisterId,
+					TokenID:    uint32(i),
+					ImageUrl:   url,
+				})
+			case "video":
+				urls = append(urls, NFTUrl{
+					CanisterID: canisterId,
+					TokenID:    uint32(i),
+					VideoUrl:   url,
+				})
+
+			}
+		}
+	}
+	if len(urls) == 0 {
+		return
+	} else if err := db.Save(&urls).Error; err != nil {
+		fmt.Printf("%s can not set urls into db with error:%v\n", canisterId, err)
+	}
+}
+
+func getEntrepotUrl(c *http.Client, canisterId string, tokenId int) (string, error) {
+	tokenIdentity, err := TokenId2TokenIdentifier(canisterId, uint32(tokenId))
+	if err != nil {
+		return "", err
+	}
+
+	url := fmt.Sprintf("https://%s.raw.ic0.app/?tokenid=%s", canisterId, tokenIdentity)
+	resp, err := c.Get(url)
+	if err != nil {
+		return "", err
+	}
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	content := string(data)
+	if strings.Contains(content, "Error") {
+		return "", errors.New(content)
+	} else if strings.Contains(content, "image href") {
+		url := entrepotDealWith1(content)
+		return url, nil
+	} else if strings.Contains(content, "URL") {
+		url := entrepotDealWith2(content)
+		return url, nil
+	} else if strings.Contains(content, "video/mp4") && strings.Contains(content, "source src") {
+		url := entrepotDealWith3(content)
+		return url, nil
+	}
+	return "", fmt.Errorf("not match body:%s,url:%s", string(data), url)
+}
+
+func entrepotDealWith1(data string) string {
+	datas := strings.Split(data, "<")
+	var data1 string
+	for _, item := range datas {
+		if strings.Contains(item, "image href") {
+			data1 = item
+		}
+	}
+	data2 := strings.Split(data1, "\"")
+	if len(data2) < 2 {
+		panic(fmt.Sprintf("data2:%s,data:%s", data2, data))
+	}
+	return data2[1]
+}
+
+func entrepotDealWith2(data string) string {
+	//fmt.Println(data)
+	result := strings.Fields(data)
+	for _, v := range result {
+		if strings.Contains(v, "URL") {
+			//fmt.Println(v)
+			b, _, _ := strings.Cut(v, "\"")
+			//fmt.Printf("before:%s,after:%s,is:%v\n", b, v, is)
+			_, a, _ := strings.Cut(b, "URL=")
+			//fmt.Printf("before:%s,after:%s,is:%v\n", b, v, is)
+			return a
+		}
+	}
+	return ""
+}
+
+func entrepotDealWith3(data string) string {
+	//fmt.Println(data)
+	result := strings.Fields(data)
+	for _, v := range result {
+		if strings.Contains(v, "src") {
+			//fmt.Println(v)
+			_, b, _ := strings.Cut(v, "\"")
+			//fmt.Printf("before:%s,after:%s,is:%v\n", b, v, is)
+			a, b, _ := strings.Cut(b, "\"")
+			//fmt.Printf("before:%s,after:%s,is:%v\n", b, v, is)
+			return a
+		}
+	}
+	return ""
+}
+
+//func getAstroxMetadata(_agent *agent.Agent, canisterID string, tokenId uint32) (string, error) {
+//	tokenIdentifier, err := TokenId2TokenIdentifier(canisterID, tokenId)
+//	if err != nil {
+//		return "", err
+//	}
+//	methodName := "metadata"
+//	arg, _ := idl.Encode([]idl.Type{new(idl.Text)}, []interface{}{tokenIdentifier})
+//	_, result, err := _agent.Update(canisterID, methodName, arg, 10)
+//	if err != nil {
+//		panic(err)
+//	}
+//	fmt.Println(result)
+//	var myResult result_2
+//	utils.Decode(&myResult, result[0])
+//	return string(myResult.Ok.Nonfungible.Metadata.Some), nil
+//}
+
+func GetYumiNFTImageUrl_1(canisterID string) ([]NFTUrl, error) {
+	var infos []NFTUrl
+	_agent := agent.New(true, "")
+	methodName := "getTokens"
+	arg, err := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
+	if err != nil {
+		return nil, err
+	}
+	_, result, err := _agent.Update(canisterID, methodName, arg, 10)
+	if err != nil && err.Error() == "() empty" {
+		return nil, nil
+	}
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+	var myResult []MetaData
+	utils.Decode(&myResult, result[0])
+	for _, token := range myResult {
+		metadata := token.MetaData.NonFungible.MetaData.Some
+		if metadata == nil {
+			fmt.Printf("metadata of %s#%d is empty\n", canisterID, token.TokenIndex)
+			continue
+		}
+
+		//urlInfo := new(YumUrl)
+		//if err = json.Unmarshal(metadata, urlInfo); err != nil {
+		//	fmt.Printf("can not unmarshal url of %s#%d with error: %v", canisterID, token.TokenIndex, err)
+		//	continue
+		//}
+		//
+		var videoUrl string
+		url := string(metadata)
+		if strings.Contains(url, ".map4") {
+			videoUrl = url
+			url = ""
+		}
+
+		infos = append(infos, NFTUrl{
+			CanisterID: canisterID,
+			TokenID:    token.TokenIndex,
+			VideoUrl:   videoUrl,
+			ImageUrl:   url,
+		})
+		fmt.Println(videoUrl, url)
 	}
 	return infos, nil
 }

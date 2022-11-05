@@ -270,5 +270,10 @@ func TestGetYumiUrlsFromIC(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	_ = GetYumiUrlsFromIC(db, "zicoj-2aaaa-aaaap-aaiea-cai")
+	_ = GetYumiUrlsFromIC(db, "3hzxy-fyaaa-aaaap-aaiiq-cai")
+}
+
+func TestName(t *testing.T) {
+	cli := new(http.Client)
+	cli.Get("")
 }

@@ -11,11 +11,12 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"uploadImage/utils"
 )
 
 const (
-	goroutineAmount = 20
+	goroutineAmount = 40
 )
 
 const (
@@ -523,4 +524,44 @@ func GetYumiUrlsFromIC(db *gorm.DB, canisterId string) error {
 	//}
 	return db.Save(&infos).Error
 	//return nil
+}
+
+func GetAstroXUrlsFromIC(db *gorm.DB, canisterId string) error {
+	infos, err := utils.GetYumiNFTImageUrl_1(canisterId)
+	if err != nil {
+		return err
+	}
+	if len(infos) == 0 {
+		return nil
+	}
+	//fmt.Println(infos[0].Url, len(infos))
+	//for _, info := range infos {
+	//	fmt.Println(info.TokenID, info.Url)
+	//}
+	return db.Save(&infos).Error
+	//return nil
+}
+
+func GetEntrepotUrls(db *gorm.DB, c *http.Client, canisterId string, supply int, types string) {
+	if supply < goroutineAmount {
+		utils.GetEntrepotUrls(db, c, canisterId, 0, supply, types)
+		return
+	}
+	singleGoroutineNum := supply / goroutineAmount
+	var wg sync.WaitGroup
+	for i := 0; i < goroutineAmount; i++ {
+		wg.Add(1)
+		if i != goroutineAmount-1 {
+			go func(from, to int) {
+				defer wg.Done()
+				utils.GetEntrepotUrls(db, c, canisterId, from, to, types)
+			}(i*singleGoroutineNum, (i+1)*singleGoroutineNum)
+		} else {
+			go func(from, to int) {
+				defer wg.Done()
+				utils.GetEntrepotUrls(db, c, canisterId, from, to, types)
+			}(i*singleGoroutineNum, goroutineAmount)
+		}
+	}
+	wg.Wait()
 }
