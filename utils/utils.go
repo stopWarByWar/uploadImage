@@ -471,7 +471,7 @@ func GetIcsMetadata(_agent *agent.Agent, canisterID string, id uint32) (*NFTUrl,
 	}
 }
 
-func GetEntrepotUrls(db *gorm.DB, c *http.Client, canisterId string, from, to int, types string) {
+func GetEntrepotUrls(db *gorm.DB, c *http.Client, rawCanisterId, canisterId string, from, to int, types string) {
 	var urls []NFTUrl
 	for i := from; i < to; i++ {
 		url, err := getEntrepotUrl(c, canisterId, i)
@@ -488,13 +488,13 @@ func GetEntrepotUrls(db *gorm.DB, c *http.Client, canisterId string, from, to in
 			switch types {
 			case "image":
 				urls = append(urls, NFTUrl{
-					CanisterID: canisterId,
+					CanisterID: rawCanisterId,
 					TokenID:    uint32(i),
 					ImageUrl:   url,
 				})
 			case "video":
 				urls = append(urls, NFTUrl{
-					CanisterID: canisterId,
+					CanisterID: rawCanisterId,
 					TokenID:    uint32(i),
 					VideoUrl:   url,
 				})
@@ -505,7 +505,7 @@ func GetEntrepotUrls(db *gorm.DB, c *http.Client, canisterId string, from, to in
 	if len(urls) == 0 {
 		return
 	} else if err := db.Save(&urls).Error; err != nil {
-		fmt.Printf("%s can not set urls into db with error:%v\n", canisterId, err)
+		fmt.Printf("%s can not set urls into db with error:%v\n", rawCanisterId, err)
 	}
 }
 

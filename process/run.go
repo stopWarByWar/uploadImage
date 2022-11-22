@@ -250,8 +250,8 @@ func GetEntrepotsUrls(filePath string, dns string, autoMigrate bool) {
 	if err = json.Unmarshal(data, &nftInfos); err != nil {
 		panic(err.Error())
 	}
-	for _, nft := range nftInfos {
-		GetEntrepotUrls(db, c, nft.CanisterId, nft.Supply, nft.Type)
+	for k, nft := range nftInfos {
+		GetEntrepotUrls(db, c, k, nft.CanisterId, nft.Supply, nft.Type)
 		var nftInfos []*utils.NFTUrl
 		if err = db.Where("canister_id IN (?)", nft.CanisterId).Find(&nftInfos).Error; err != nil {
 			panic(err)

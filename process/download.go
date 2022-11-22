@@ -542,9 +542,9 @@ func GetAstroXUrlsFromIC(db *gorm.DB, canisterId string) error {
 	//return nil
 }
 
-func GetEntrepotUrls(db *gorm.DB, c *http.Client, canisterId string, supply int, types string) {
+func GetEntrepotUrls(db *gorm.DB, c *http.Client, rawCanisterId, canisterId string, supply int, types string) {
 	if supply < goroutineAmount {
-		utils.GetEntrepotUrls(db, c, canisterId, 0, supply, types)
+		utils.GetEntrepotUrls(db, c, rawCanisterId, canisterId, 0, supply, types)
 		return
 	}
 	singleGoroutineNum := supply / goroutineAmount
@@ -554,12 +554,12 @@ func GetEntrepotUrls(db *gorm.DB, c *http.Client, canisterId string, supply int,
 		if i != goroutineAmount-1 {
 			go func(from, to int) {
 				defer wg.Done()
-				utils.GetEntrepotUrls(db, c, canisterId, from, to, types)
+				utils.GetEntrepotUrls(db, c, rawCanisterId, canisterId, from, to, types)
 			}(i*singleGoroutineNum, (i+1)*singleGoroutineNum)
 		} else {
 			go func(from, to int) {
 				defer wg.Done()
-				utils.GetEntrepotUrls(db, c, canisterId, from, to, types)
+				utils.GetEntrepotUrls(db, c, rawCanisterId, canisterId, from, to, types)
 			}(i*singleGoroutineNum, goroutineAmount)
 		}
 	}
