@@ -184,3 +184,38 @@ type BasicEntrepotImageInfo struct {
 //	Ok    Metadata `ic:"Ok"`
 //	Index string   `ic:"EnumIndex"`
 //}
+
+type GenericValue_1 struct {
+	Nat64Content uint64  `ic:"Nat64Content"`
+	Nat32Content uint32  `ic:"Nat32Content"`
+	BoolContent  bool    `ic:"BoolContent"`
+	Nat8Content  uint8   `ic:"Nat8Content"`
+	Int64Content int64   `ic:"Int64Content"`
+	IntContent   int     `ic:"IntContent"`
+	NatContent   uint    `ic:"NatContent"`
+	Nat16Content uint16  `ic:"Nat16Content"`
+	Int32Content int32   `ic:"Int32Content"`
+	Int8Content  int8    `ic:"Int8Content"`
+	FloatContent float64 `ic:"FloatContent"`
+	Int16Content int16   `ic:"Int16Content"`
+	BlobContent  []uint8 `ic:"BlobContent"`
+	Principal    principal.Principal
+	TextContent  string `ic:"TextContent"`
+	Index        string `ic:"EnumIndex"`
+}
+
+type TokenPropertie struct {
+	Name  string         `ic:"0"`
+	Value GenericValue_1 `ic:"1"`
+}
+
+type TokenMetaData struct {
+	Properties []TokenPropertie `ic:"properties"`
+}
+
+type NftError struct{}
+type ManualReply_3 struct {
+	Ok    TokenMetaData `ic:"Ok"`
+	Err   NftError      `ic:"Err"`
+	Index string        `ic:"EnumIndex"`
+}

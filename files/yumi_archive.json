@@ -154,5 +154,25 @@
   "algz6-lqaaa-aaaap-aakza-cai": {
     "canister_id": "algz6-lqaaa-aaaap-aakza-cai",
     "name": "Royal Ape"
+  },
+  "lovxf-kaaaa-aaaap-aalea-cai": {
+    "canister_id": "lovxf-kaaaa-aaaap-aalea-cai",
+    "name": "AlphaDfinity"
+  },
+  "cr2rc-vaaaa-aaaap-aakwa-cai": {
+    "canister_id": "cr2rc-vaaaa-aaaap-aakwa-cai",
+    "name": "Creator Gloves"
+  },
+  "bgi5q-eyaaa-aaaap-aak6q-cai": {
+    "canister_id": "bgi5q-eyaaa-aaaap-aak6q-cai",
+    "name": "Kosmokos"
+  },
+  "ke2v7-iqaaa-aaaap-aalda-cai": {
+    "canister_id": "ke2v7-iqaaa-aaaap-aalda-cai",
+    "name": "BelleShe"
+  },
+  "c7y4k-oqaaa-aaaap-aakxa-cai": {
+    "canister_id": "c7y4k-oqaaa-aaaap-aakxa-cai",
+    "name": "WOA"
   }
 }

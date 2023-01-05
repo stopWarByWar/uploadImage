@@ -653,3 +653,78 @@ func GetYumiNFTImageUrl_1(canisterID string) ([]NFTUrl, error) {
 	}
 	return infos, nil
 }
+
+func SaveDMailUrls(db *gorm.DB, _agent *agent.Agent, canisterID string) error {
+	//canisterID := "qohn4-fiaaa-aaaak-ady6a-cai"
+
+	supply, err := getDMailSupply(_agent, canisterID)
+	if err != nil {
+		return err
+	}
+
+	var goroutine = int64(40)
+
+	eachTask := supply / goroutine
+	fmt.Printf("start to fetch dmail images, %d gorountines, %d tasks each goroutine\n", goroutine, eachTask)
+
+	var wg sync.WaitGroup
+	for i := int64(0); i < goroutine; i++ {
+		wg.Add(1)
+		var processID, from, to int64
+		if i != goroutine-1 {
+			processID, from, to = i, i*eachTask, (i+1)*eachTask
+		} else {
+			processID, from, to = i, i*eachTask, supply
+		}
+
+		go func(processID, from, to int64) {
+			if err = saveDMailUrls(db, _agent, canisterID, processID, from, to); err != nil {
+				panic(err)
+			}
+			defer wg.Done()
+		}(processID, from, to)
+	}
+	wg.Wait()
+	return nil
+}
+
+func saveDMailUrls(db *gorm.DB, _agent *agent.Agent, canisterID string, processID, from, to int64) error {
+	methodName := "dip721_token_metadata"
+	var urls []NFTUrl
+	for tokenId := from; tokenId < to; tokenId++ {
+		arg, _ := idl.Encode([]idl.Type{new(idl.Nat)}, []interface{}{big.NewInt(tokenId)})
+		_, result, _, err := _agent.Query(canisterID, methodName, arg)
+		if err != nil {
+			panic(err)
+		}
+
+		myResult := ManualReply_3{}
+		utils.Decode(&myResult, result[0])
+		for _, p := range myResult.Ok.Properties {
+			if p.Name == "location" {
+				imageUrl := p.Value.TextContent
+				urls = append(urls, NFTUrl{
+					CanisterID: canisterID,
+					TokenID:    uint32(tokenId),
+					ImageUrl:   imageUrl,
+				})
+			}
+		}
+		if (tokenId-from)%100 == 0 {
+			fmt.Printf("%d:%d\n", processID, tokenId-from)
+		}
+	}
+
+	return db.Save(&urls).Error
+}
+
+func getDMailSupply(_agent *agent.Agent, canisterID string) (int64, error) {
+	//canisterID := "qohn4-fiaaa-aaaak-ady6a-cai"
+	methodName := "dip721_total_supply"
+	arg, _ := idl.Encode([]idl.Type{new(idl.Null)}, []interface{}{nil})
+	_, result, _, err := _agent.Query(canisterID, methodName, arg)
+	if err != nil {
+		return 0, err
+	}
+	return result[0].(*big.Int).Int64(), nil
+}
